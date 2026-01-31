@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+
+    <title>Додати місце - City Assistant</title>
+
+    <link rel="manifest" href="../manifest.json" />
+    <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container header-content">
+        <a href="../index.html" class="back-button">← Назад</a>
+        <h1 class="header-title">Додати місце</h1>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="container">
+        <form id="add-place-form" class="form">
+          <!-- Назва місця -->
+          <div class="form-group">
+            <label for="place-name" class="form-label">
+              Назва місця <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="place-name"
+              class="form-input"
+              placeholder="Наприклад: Оперний театр"
+              required
+              minlength="3"
+              maxlength="100"
+            />
+          </div>
+
+          <!-- Адреса -->
+          <div class="form-group">
+            <label for="place-address" class="form-label">
+              Адреса <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="place-address"
+              class="form-input"
+              placeholder="Наприклад: вул. Володимирська, 50"
+              required
+              minlength="5"
+              maxlength="200"
+            />
+          </div>
+
+          <!-- Нотатки -->
+          <div class="form-group">
+            <label for="place-notes" class="form-label">
+              Нотатки (опціонально)
+            </label>
+            <textarea
+              id="place-notes"
+              class="form-textarea"
+              placeholder="Додайте свої нотатки про це місце..."
+              rows="4"
+              maxlength="500"
+            ></textarea>
+            <span class="form-hint">Максимум 500 символів</span>
+          </div>
+
+          <!-- Геолокація -->
+          <div class="form-group">
+            <label class="form-label">Геолокація</label>
+            <button
+              type="button"
+              id="get-location-btn"
+              class="button button-secondary"
+            >
+              📍 Отримати мою локацію
+            </button>
+
+            <!-- Координати (приховано поки не отримаємо) -->
+            <div id="coordinates-display" class="coordinates-box hidden">
+              <p class="coordinates-text">
+                📍 <span id="coordinates-value"></span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Фото -->
+          <div class="form-group">
+            <label class="form-label">Фото місця</label>
+            <button
+              type="button"
+              id="take-photo-btn"
+              class="button button-secondary"
+            >
+              📸 Зробити фото
+            </button>
+
+            <!-- Превью фото (приховано поки не зробимо фото) -->
+            <div id="photo-preview" class="photo-preview hidden">
+              <img id="photo-preview-img" src="" alt="Preview" />
+              <button
+                type="button"
+                id="remove-photo-btn"
+                class="button-remove-photo"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="form-actions">
+            <button type="submit" class="button button-primary button-full">
+              💾 Зберегти місце
+            </button>
+            <a href="../index.html" class="button button-outline button-full">
+              Скасувати
+            </a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- Loading Overlay (приховано за замовчуванням) -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="loading-spinner"></div>
+      <p>Збереження...</p>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/db.js"></script>
+    <script src="../js/camera.js"></script>
+    <script src="../js/geolocation.js"></script>
+    <script src="../js/app.js"></script>
+  </body>
+</html>

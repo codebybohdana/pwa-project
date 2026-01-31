@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta
+      name="description"
+      content="Зберігайте улюблені місця міста та користуйтесь ними офлайн"
+    />
+
+    <title>Offline City Assistant</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/icons/icon-192.png" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container header-content">
+        <h1 class="header-title">📍 City Assistant</h1>
+        <div id="online-status" class="online-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Online</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Offline Banner (прихований за замовчуванням) -->
+    <div id="offline-banner" class="offline-banner hidden">
+      <div class="container">
+        <p>⚠️ Ви офлайн. Додаток працює в обмеженому режимі.</p>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="container">
+        <!-- Search Bar -->
+        <div class="search-section">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="🔍 Шукати місця..."
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <!-- Add Place Button -->
+        <div class="actions">
+          <a href="pages/add-place.html" class="button button-primary">
+            ➕ Додати місце
+          </a>
+        </div>
+
+        <!-- Places List -->
+        <div id="places-list" class="places-grid">
+          <!-- Місця будуть додаватись динамічно через JS -->
+        </div>
+
+        <!-- Empty State (показується коли немає місць) -->
+        <div id="empty-state" class="empty-state hidden">
+          <div class="empty-state-content">
+            <div class="empty-state-icon">📍</div>
+            <h2>Немає збережених місць</h2>
+            <p>Додайте своє перше улюблене місце, щоб почати!</p>
+            <a href="pages/add-place.html" class="button button-primary">
+              Додати перше місце
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>© 2026 Offline City Assistant | PWA Project</p>
+      </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+      // Реєстрація Service Worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+              console.log(
+                "✅ Service Worker зареєстрований:",
+                registration.scope
+              );
+            })
+            .catch((error) => {
+              console.log("❌ Помилка реєстрації Service Worker:", error);
+            });
+        });
+      }
+
+      // Відстеження online/offline статусу
+      window.addEventListener("online", () => {
+        document.getElementById("online-status").innerHTML =
+          '<span class="status-dot status-online"></span><span class="status-text">Online</span>';
+        document.getElementById("offline-banner").classList.add("hidden");
+      });
+
+      window.addEventListener("offline", () => {
+        document.getElementById("online-status").innerHTML =
+          '<span class="status-dot status-offline"></span><span class="status-text">Offline</span>';
+        document.getElementById("offline-banner").classList.remove("hidden");
+      });
+    </script>
+  </body>
+</html>

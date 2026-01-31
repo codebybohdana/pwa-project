@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2563eb" />
+
+    <title>Деталі місця - City Assistant</title>
+
+    <link rel="manifest" href="../manifest.json" />
+    <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="stylesheet" href="../css/styles.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container header-content">
+        <a href="../index.html" class="back-button">← Назад</a>
+        <h1 class="header-title" id="place-name-header">Деталі місця</h1>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="container">
+        <article class="place-details">
+          <!-- Фото -->
+          <div class="place-details-photo">
+            <img
+              id="place-photo"
+              src="../images/placeholder.png"
+              alt="Фото місця"
+              class="place-photo"
+            />
+          </div>
+
+          <!-- Інформація -->
+          <div class="place-details-info">
+            <!-- Назва -->
+            <h2 id="place-name" class="place-name">Завантаження...</h2>
+
+            <!-- Адреса -->
+            <div class="info-section">
+              <h3 class="info-label">📍 Адреса</h3>
+              <p id="place-address" class="info-text">—</p>
+            </div>
+
+            <!-- Нотатки -->
+            <div class="info-section" id="notes-section">
+              <h3 class="info-label">📝 Нотатки</h3>
+              <p id="place-notes" class="info-text">—</p>
+            </div>
+
+            <!-- Координати -->
+            <div class="info-section" id="coordinates-section">
+              <h3 class="info-label">🗺️ Координати</h3>
+              <p id="place-coordinates" class="info-text coordinates-text">—</p>
+            </div>
+
+            <!-- Дата додавання -->
+            <div class="info-section">
+              <h3 class="info-label">📅 Додано</h3>
+              <p id="place-date" class="info-text">—</p>
+            </div>
+          </div>
+
+          <!-- Дії -->
+          <div class="place-details-actions">
+            <button id="edit-btn" class="button button-secondary button-full">
+              ✏️ Редагувати
+            </button>
+            <button id="delete-btn" class="button button-danger button-full">
+              🗑️ Видалити
+            </button>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <!-- Delete Confirmation Modal (приховано за замовчуванням) -->
+    <div id="delete-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <h3>Видалити місце?</h3>
+        <p>Ця дія незворотна. Всі дані про це місце будуть видалені.</p>
+        <div class="modal-actions">
+          <button id="confirm-delete-btn" class="button button-danger">
+            Так, видалити
+          </button>
+          <button id="cancel-delete-btn" class="button button-outline">
+            Скасувати
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/db.js"></script>
+    <script src="../js/app.js"></script>
+  </body>
+</html>
