@@ -23,7 +23,8 @@ let currentCoordinates = null;
  */
 if (
   window.location.pathname.endsWith("index.html") ||
-  window.location.pathname === "/"
+  window.location.pathname === "/" ||
+  window.location.pathname === ""
 ) {
   document.addEventListener("DOMContentLoaded", async () => {
     console.log("📱 Ініціалізація головної сторінки...");
@@ -109,16 +110,24 @@ function createPlaceCard(place) {
   const photoSrc = place.photo || "images/placeholder.png";
 
   // Дата
-  const dateStr = new Date(place.timestamp).toLocaleDateString("uk-UA", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  let dateStr = "Дата не вказана";
+  if (place.timestamp) {
+    try {
+      dateStr = new Date(place.timestamp).toLocaleDateString("uk-UA", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (error) {
+      console.error("Помилка форматування дати:", error);
+      dateStr = new Date(place.timestamp).toLocaleDateString();
+    }
+  }
 
   card.innerHTML = `
-        <img src="${photoSrc}" alt="${
+        <img src="${photoSrc}" alt="${escapeHtml(
     place.name
-  }" class="place-card-image" onerror="this.src='images/placeholder.png'">
+  )}" class="place-card-image" onerror="this.src='images/placeholder.png'">
         <div class="place-card-content">
             <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
             <p class="place-card-address">${escapeHtml(place.address)}</p>
@@ -234,6 +243,8 @@ async function handleFormSubmit() {
       coordinates: currentCoordinates || null,
       timestamp: Date.now(),
     };
+
+    console.log("Дані для збереження:", placeData);
 
     // Зберегти в базу даних
     const id = await addPlace(placeData);
@@ -376,6 +387,8 @@ if (window.location.pathname.includes("place-details.html")) {
         throw new Error("ID місця не знайдено");
       }
 
+      console.log("Завантаження місця ID:", placeId);
+
       // Завантажити деталі місця
       await loadPlaceDetails(parseInt(placeId));
 
@@ -383,7 +396,7 @@ if (window.location.pathname.includes("place-details.html")) {
       setupDetailsButtons(parseInt(placeId));
     } catch (error) {
       console.error("❌ Помилка завантаження деталей:", error);
-      showError("Не вдалося завантажити місце");
+      showError("Не вдалося завантажити місце: " + error.message);
       setTimeout(() => {
         window.location.href = "../index.html";
       }, 2000);
@@ -402,13 +415,15 @@ async function loadPlaceDetails(id) {
     const place = await getPlaceById(id);
 
     if (!place) {
-      throw new Error("Місце не знайдено");
+      throw new Error("Місце не знайдено в базі даних");
     }
+
+    console.log("Місце знайдено:", place);
 
     // Відобразити дані
     displayPlaceDetails(place);
   } catch (error) {
-    console.error("❌ Помилка:", error);
+    console.error("❌ Помилка завантаження:", error);
     throw error;
   }
 }
@@ -418,29 +433,35 @@ async function loadPlaceDetails(id) {
  * @param {Object} place - Дані місця
  */
 function displayPlaceDetails(place) {
+  console.log("Відображення деталей місця:", place);
+
   // Назва в header
   const headerTitle = document.getElementById("place-name-header");
   if (headerTitle) {
-    headerTitle.textContent = place.name;
+    headerTitle.textContent = place.name || "Місце";
   }
 
   // Фото
   const photo = document.getElementById("place-photo");
   if (photo) {
     photo.src = place.photo || "../images/placeholder.png";
-    photo.alt = place.name;
+    photo.alt = place.name || "Фото місця";
+    photo.onerror = function () {
+      console.log("Помилка завантаження фото, використовую placeholder");
+      this.src = "../images/placeholder.png";
+    };
   }
 
   // Назва
   const name = document.getElementById("place-name");
   if (name) {
-    name.textContent = place.name;
+    name.textContent = place.name || "Без назви";
   }
 
   // Адреса
   const address = document.getElementById("place-address");
   if (address) {
-    address.textContent = place.address;
+    address.textContent = place.address || "Адреса не вказана";
   }
 
   // Нотатки
@@ -456,28 +477,52 @@ function displayPlaceDetails(place) {
   // Координати
   const coordinates = document.getElementById("place-coordinates");
   const coordsSection = document.getElementById("coordinates-section");
-  if (place.coordinates) {
+
+  if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
     if (coordinates) {
-      coordinates.textContent = formatCoordinates(
-        place.coordinates.lat,
-        place.coordinates.lng
-      );
+      try {
+        const formatted = formatCoordinates(
+          place.coordinates.lat,
+          place.coordinates.lng
+        );
+        coordinates.textContent = formatted;
+        console.log("Координати відформатовано:", formatted);
+      } catch (error) {
+        console.error("Помилка форматування координат:", error);
+        coordinates.textContent = `${place.coordinates.lat.toFixed(
+          4
+        )}, ${place.coordinates.lng.toFixed(4)}`;
+      }
     }
     if (coordsSection) coordsSection.classList.remove("hidden");
   } else {
+    console.log("Координати відсутні");
     if (coordsSection) coordsSection.classList.add("hidden");
   }
 
   // Дата
   const date = document.getElementById("place-date");
-  if (date && place.timestamp) {
-    date.textContent = new Date(place.timestamp).toLocaleDateString("uk-UA", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  if (date) {
+    if (place.timestamp) {
+      try {
+        const dateObj = new Date(place.timestamp);
+        const formatted = dateObj.toLocaleDateString("uk-UA", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        date.textContent = formatted;
+        console.log("Дата відформатована:", formatted);
+      } catch (error) {
+        console.error("Помилка форматування дати:", error);
+        date.textContent = new Date(place.timestamp).toLocaleString("uk-UA");
+      }
+    } else {
+      console.log("Timestamp відсутній");
+      date.textContent = "Дата не вказана";
+    }
   }
 
   console.log("✅ Деталі відображено");
@@ -625,6 +670,7 @@ function showLoading(show) {
  */
 function showError(message) {
   alert("❌ " + message);
+  console.error("Error shown to user:", message);
 }
 
 /**
@@ -633,6 +679,7 @@ function showError(message) {
  */
 function showSuccess(message) {
   alert("✅ " + message);
+  console.log("Success shown to user:", message);
 }
 
 /**
@@ -641,6 +688,7 @@ function showSuccess(message) {
  */
 function showInfo(message) {
   alert("ℹ️ " + message);
+  console.log("Info shown to user:", message);
 }
 
 /**
@@ -649,6 +697,7 @@ function showInfo(message) {
  * @returns {string} Екранований текст
  */
 function escapeHtml(text) {
+  if (!text) return "";
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
