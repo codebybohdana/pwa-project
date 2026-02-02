@@ -9,7 +9,7 @@ const CACHE_VERSION = "v1";
 const CACHE_NAME = `city-assistant-${CACHE_VERSION}`;
 
 // Файли для кешування
-const STATIC_ASSETS = [
+const APP_ASSETS = [
   "/",
   "/index.html",
   "/pages/add-place.html",
@@ -20,8 +20,16 @@ const STATIC_ASSETS = [
   "/js/db.js",
   "/js/camera.js",
   "/js/geolocation.js",
-  "/manifest.json",
+  "/manifest.webmanifest",
   "/images/placeholder.png",
+  "/images/icons/icon-72.png",
+  "/images/icons/icon-96.png",
+  "/images/icons/icon-144.png",
+  "/images/icons/icon-192.png",
+  "/images/icons/icon-384.png",
+  "/images/icons/icon-512.png",
+  "/images/icons/icon-192-maskable.png",
+  "/images/icons/icon-512-maskable.png",
 ];
 
 // ========================================
@@ -35,7 +43,7 @@ self.addEventListener("install", (event) => {
       .open(CACHE_NAME)
       .then((cache) => {
         console.log("[Service Worker] Caching static assets");
-        return cache.addAll(STATIC_ASSETS);
+        return cache.addAll(APP_ASSETS);
       })
       .then(() => {
         console.log("[Service Worker] Installed successfully");
@@ -77,6 +85,7 @@ self.addEventListener("activate", (event) => {
 // FETCH EVENT (Стратегії кешування)
 // ========================================
 self.addEventListener("fetch", (event) => {
+  // destrukruryzacja event.req
   const { request } = event;
   const url = new URL(request.url);
 
