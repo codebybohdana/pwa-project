@@ -1,3 +1,4 @@
+// service-worker.js
 /**
  * ========================================
  * SERVICE WORKER
