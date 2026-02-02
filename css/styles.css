@@ -55,8 +55,8 @@
 }
 
 /* ========================================
-   RESET & BASE STYLES
-   ======================================== */
+     RESET & BASE STYLES
+     ======================================== */
 * {
   margin: 0;
   padding: 0;
@@ -99,8 +99,8 @@ a:hover {
 }
 
 /* ========================================
-   LAYOUT
-   ======================================== */
+     LAYOUT
+     ======================================== */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -114,8 +114,8 @@ a:hover {
 }
 
 /* ========================================
-   HEADER
-   ======================================== */
+     HEADER
+     ======================================== */
 .header {
   background: var(--color-primary);
   color: white;
@@ -192,8 +192,8 @@ a:hover {
 }
 
 /* ========================================
-   OFFLINE BANNER
-   ======================================== */
+     OFFLINE BANNER
+     ======================================== */
 .offline-banner {
   background: var(--color-danger);
   color: white;
@@ -203,8 +203,8 @@ a:hover {
 }
 
 /* ========================================
-   SEARCH SECTION
-   ======================================== */
+     SEARCH SECTION
+     ======================================== */
 .search-section {
   margin-bottom: var(--space-lg);
 }
@@ -231,8 +231,8 @@ a:hover {
 }
 
 /* ========================================
-   ACTIONS
-   ======================================== */
+     ACTIONS
+     ======================================== */
 .actions {
   margin-bottom: var(--space-lg);
   display: flex;
@@ -241,8 +241,8 @@ a:hover {
 }
 
 /* ========================================
-   BUTTONS
-   ======================================== */
+     BUTTONS
+     ======================================== */
 .button {
   display: inline-flex;
   align-items: center;
@@ -305,9 +305,13 @@ a:hover {
   width: 100%;
 }
 
+.button-success {
+  background: var(--color-success) !important;
+}
+
 /* ========================================
-   PLACES GRID
-   ======================================== */
+     PLACES GRID
+     ======================================== */
 .places-grid {
   display: grid;
   gap: var(--space-md);
@@ -371,8 +375,8 @@ a:hover {
 }
 
 /* ========================================
-   EMPTY STATE
-   ======================================== */
+     EMPTY STATE
+     ======================================== */
 .empty-state {
   text-align: center;
   padding: var(--space-2xl) var(--space-md);
@@ -402,8 +406,8 @@ a:hover {
 }
 
 /* ========================================
-   FORM
-   ======================================== */
+     FORM
+     ======================================== */
 .form {
   background: var(--color-surface);
   padding: var(--space-lg);
@@ -469,8 +473,8 @@ a:hover {
 }
 
 /* ========================================
-   COORDINATES BOX
-   ======================================== */
+     COORDINATES BOX
+     ======================================== */
 .coordinates-box {
   margin-top: var(--space-md);
   padding: var(--space-md);
@@ -486,8 +490,8 @@ a:hover {
 }
 
 /* ========================================
-   PHOTO PREVIEW
-   ======================================== */
+     PHOTO PREVIEW
+     ======================================== */
 .photo-preview {
   margin-top: var(--space-md);
   position: relative;
@@ -526,8 +530,8 @@ a:hover {
 }
 
 /* ========================================
-   PLACE DETAILS
-   ======================================== */
+     PLACE DETAILS
+     ======================================== */
 .place-details {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
@@ -593,8 +597,26 @@ a:hover {
 }
 
 /* ========================================
-   MODAL
-   ======================================== */
+     MAP CONTAINER (NEW!)
+     ======================================== */
+.map-container {
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--color-border);
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 250px;
+  border: none;
+  display: block;
+}
+
+/* ========================================
+     MODAL
+     ======================================== */
 .modal {
   position: fixed;
   top: 0;
@@ -644,8 +666,8 @@ a:hover {
 }
 
 /* ========================================
-   LOADING OVERLAY
-   ======================================== */
+     LOADING OVERLAY
+     ======================================== */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -678,8 +700,8 @@ a:hover {
 }
 
 /* ========================================
-   FOOTER
-   ======================================== */
+     FOOTER
+     ======================================== */
 .footer {
   background: var(--color-surface);
   padding: var(--space-lg) 0;
@@ -690,8 +712,8 @@ a:hover {
 }
 
 /* ========================================
-   UTILITY CLASSES
-   ======================================== */
+     UTILITY CLASSES
+     ======================================== */
 .hidden {
   display: none !important;
 }
@@ -705,8 +727,8 @@ a:hover {
 }
 
 /* ========================================
-   RESPONSIVE - TABLET (768px+)
-   ======================================== */
+     RESPONSIVE - TABLET (768px+)
+     ======================================== */
 @media (min-width: 768px) {
   .container {
     padding: 0 var(--space-lg);
@@ -732,11 +754,15 @@ a:hover {
   .modal-actions {
     flex-direction: row;
   }
+
+  .map-container iframe {
+    height: 300px;
+  }
 }
 
 /* ========================================
-   RESPONSIVE - DESKTOP (1024px+)
-   ======================================== */
+     RESPONSIVE - DESKTOP (1024px+)
+     ======================================== */
 @media (min-width: 1024px) {
   .container {
     padding: 0 var(--space-xl);
@@ -753,5 +779,9 @@ a:hover {
 
   .place-details-actions {
     flex-direction: row;
+  }
+
+  .map-container iframe {
+    height: 350px;
   }
 }

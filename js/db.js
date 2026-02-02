@@ -1,4 +1,3 @@
-// js/db.js
 /**
  * ========================================
  * DATABASE MODULE (IndexedDB)

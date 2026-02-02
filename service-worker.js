@@ -1,4 +1,3 @@
-// service-worker.js
 /**
  * ========================================
  * SERVICE WORKER
@@ -16,11 +15,13 @@ const APP_ASSETS = [
   "/pages/add-place.html",
   "/pages/place-details.html",
   "/pages/offline.html",
+  "/pages/edit-place.html",
   "/css/styles.css",
   "/js/app.js",
   "/js/db.js",
   "/js/camera.js",
   "/js/geolocation.js",
+  "/js/edit.js",
   "/manifest.webmanifest",
   "/images/placeholder.png",
   "/images/icons/icon-72.png",
@@ -86,7 +87,6 @@ self.addEventListener("activate", (event) => {
 // FETCH EVENT (Стратегії кешування)
 // ========================================
 self.addEventListener("fetch", (event) => {
-  // destrukruryzacja event.req
   const { request } = event;
   const url = new URL(request.url);
 

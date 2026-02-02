@@ -1,4 +1,3 @@
-<!-- pages/place-details.html -->
 <!DOCTYPE html>
 <html lang="uk">
   <head>
@@ -52,10 +51,28 @@
               <p id="place-notes" class="info-text">—</p>
             </div>
 
-            <!-- Координати -->
+            <!-- Координати та карта -->
             <div class="info-section" id="coordinates-section">
-              <h3 class="info-label">🗺️ Координати</h3>
+              <h3 class="info-label">🗺️ Розташування</h3>
+              
+              <!-- Координати текстом -->
               <p id="place-coordinates" class="info-text coordinates-text">—</p>
+
+              <!-- Кнопка відкрити на Google Maps -->
+              
+                id="open-maps-btn"
+                href="#"
+                target="_blank"
+                class="button button-secondary"
+                style="margin-top: 12px; display: none"
+              >
+                📍 Відкрити на Google Maps
+              </a>
+
+              <!-- Міні-карта (iframe OpenStreetMap) -->
+              <div id="map-preview" class="map-container" style="display: none">
+                <!-- Карта буде додана через JS -->
+              </div>
             </div>
 
             <!-- Дата додавання -->

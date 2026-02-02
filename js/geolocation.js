@@ -1,4 +1,3 @@
-// js/geolocation.js
 /**
  * ========================================
  * GEOLOCATION MODULE

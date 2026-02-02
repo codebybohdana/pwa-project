@@ -1,4 +1,3 @@
-// js/app.js
 /**
  * ========================================
  * MAIN APPLICATION LOGIC
@@ -296,6 +295,14 @@ function setupLocationButton() {
         display.classList.remove("hidden");
       }
 
+      // Налаштувати кнопку попереднього перегляду на карті
+      const previewBtn = document.getElementById("preview-on-map");
+      if (previewBtn) {
+        const mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+        previewBtn.href = mapsUrl;
+        previewBtn.style.display = "inline-flex";
+      }
+
       // Оновити кнопку
       btn.textContent = "✅ Локація отримана";
       btn.classList.add("button-success");
@@ -475,11 +482,14 @@ function displayPlaceDetails(place) {
     if (notesSection) notesSection.classList.add("hidden");
   }
 
-  // Координати
+  // Координати та карта
   const coordinates = document.getElementById("place-coordinates");
   const coordsSection = document.getElementById("coordinates-section");
+  const openMapsBtn = document.getElementById("open-maps-btn");
+  const mapPreview = document.getElementById("map-preview");
 
   if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
+    // Відобразити координати текстом
     if (coordinates) {
       try {
         const formatted = formatCoordinates(
@@ -495,7 +505,39 @@ function displayPlaceDetails(place) {
         )}, ${place.coordinates.lng.toFixed(4)}`;
       }
     }
+
+    // Показати секцію координат
     if (coordsSection) coordsSection.classList.remove("hidden");
+
+    // Налаштувати кнопку Google Maps
+    if (openMapsBtn) {
+      const mapsUrl = `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`;
+      openMapsBtn.href = mapsUrl;
+      openMapsBtn.style.display = "inline-flex";
+    }
+
+    // Показати міні-карту (OpenStreetMap iframe)
+    if (mapPreview) {
+      const lat = place.coordinates.lat;
+      const lng = place.coordinates.lng;
+
+      // Створити OpenStreetMap embed
+      const osmMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
+        lng - 0.01
+      },${lat - 0.01},${lng + 0.01},${
+        lat + 0.01
+      }&layer=mapnik&marker=${lat},${lng}`;
+
+      mapPreview.innerHTML = `
+        <iframe 
+          src="${osmMapUrl}"
+          style="border: none;"
+        ></iframe>
+      `;
+      mapPreview.style.display = "block";
+
+      console.log("✅ Карта відображена");
+    }
   } else {
     console.log("Координати відсутні");
     if (coordsSection) coordsSection.classList.add("hidden");
@@ -538,8 +580,8 @@ function setupDetailsButtons(placeId) {
   const editBtn = document.getElementById("edit-btn");
   if (editBtn) {
     editBtn.addEventListener("click", () => {
-      // TODO: Додати функціонал редагування
-      showInfo("Функція редагування буде додана пізніше");
+      // Перенаправити на сторінку редагування
+      window.location.href = `edit-place.html?id=${placeId}`;
     });
   }
 
