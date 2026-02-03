@@ -60,7 +60,7 @@
   });
 
   // Cleanup blob URLs on navigation (helps memory/Lighthouse)
-  window.addEventListener("beforeunload", () => {
+  window.addEventListener("pagehide", () => {
     window.CityImages?.revokeAllObjectUrls?.();
   });
 })();

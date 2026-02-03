@@ -38,6 +38,7 @@
         src="images/placeholder.png"
         alt="${window.CityUtils.escapeHtml(place.name || "Place photo")}"
         loading="lazy"
+        decoding="async"
       />
       <div class="place-card-content">
         <h3 class="place-card-title">${window.CityUtils.escapeHtml(

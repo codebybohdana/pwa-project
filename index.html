@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Save your favorite city places and use them offline." />
+    <meta
+      name="description"
+      content="Save your favorite city places and use them offline."
+    />
 
     <title>City Assistant - PWA</title>
 
@@ -19,7 +22,12 @@
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
 
-        <div id="online-status" class="online-status" role="status" aria-live="polite">
+        <div
+          id="online-status"
+          class="online-status"
+          role="status"
+          aria-live="polite"
+        >
           <span class="status-dot status-online" aria-hidden="true"></span>
           <span class="status-text">Online</span>
         </div>
@@ -27,7 +35,12 @@
     </header>
 
     <!-- Offline Banner -->
-    <div id="offline-banner" class="offline-banner hidden" role="alert" aria-live="assertive">
+    <div
+      id="offline-banner"
+      class="offline-banner hidden"
+      role="alert"
+      aria-live="assertive"
+    >
       <div class="container">
         <p>⚠️ You're offline. App is running in limited mode.</p>
       </div>
@@ -53,16 +66,30 @@
 
         <!-- Add Place Button -->
         <div class="actions">
-          <a href="pages/add-place.html" class="button button-primary" aria-label="Add a new place">
+          <a
+            href="pages/add-place.html"
+            class="button button-primary"
+            aria-label="Add a new place"
+          >
             ➕ Add Place
           </a>
         </div>
 
         <!-- Places List -->
-        <div id="places-list" class="places-grid" role="list" aria-label="List of saved places"></div>
+        <div
+          id="places-list"
+          class="places-grid"
+          role="list"
+          aria-label="List of saved places"
+        ></div>
 
         <!-- Empty State -->
-        <div id="empty-state" class="empty-state hidden" role="status" aria-live="polite">
+        <div
+          id="empty-state"
+          class="empty-state hidden"
+          role="status"
+          aria-live="polite"
+        >
           <div class="empty-state-content">
             <div class="empty-state-icon" aria-hidden="true">📍</div>
             <h2>No saved places</h2>
@@ -99,6 +126,40 @@
             .catch((err) => console.error("❌ SW failed", err));
         });
       }
+    </script>
+
+    <!-- ✨ WEB VITALS -->
+    <script type="module">
+      import {
+        onCLS,
+        onINP,
+        onFCP,
+        onLCP,
+        onTTFB,
+      } from "https://unpkg.com/web-vitals@4?module";
+
+      function logMetric(metric) {
+        const { name, value, rating } = metric;
+        const emoji =
+          rating === "good"
+            ? "🟢"
+            : rating === "needs-improvement"
+            ? "🟡"
+            : "🔴";
+        const unit = name === "CLS" ? "" : "ms";
+        const displayValue =
+          name === "CLS" ? value.toFixed(3) : Math.round(value);
+
+        console.log(`${emoji} ${name}: ${displayValue}${unit} (${rating})`);
+      }
+
+      onCLS(logMetric);
+      onINP(logMetric);
+      onFCP(logMetric);
+      onLCP(logMetric);
+      onTTFB(logMetric);
+
+      console.log("📊 Web Vitals monitoring active");
     </script>
   </body>
 </html>

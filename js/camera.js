@@ -45,7 +45,7 @@
       if (!ctx) throw new Error("Canvas not supported");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      return canvas.toDataURL("image/jpeg", 0.8);
+      return canvas.toDataURL("image/jpeg", 0.6);
     } catch (error) {
       const name = error?.name || "";
       if (name === "NotAllowedError")
