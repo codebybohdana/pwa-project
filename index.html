@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Save your favorite city places and use them offline" />
+    <meta
+      name="description"
+      content="Save your favorite city places and use them offline"
+    />
 
     <title>City Assistant - PWA</title>
 
@@ -29,7 +32,7 @@
       </div>
     </header>
 
-    <!-- Offline Banner (hidden by default) -->
+    <!-- Offline Banner -->
     <div id="offline-banner" class="offline-banner hidden">
       <div class="container">
         <p>⚠️ You're offline. App is running in limited mode.</p>
@@ -60,11 +63,9 @@
         </div>
 
         <!-- Places List -->
-        <div id="places-list" class="places-grid">
-          <!-- Places will be added dynamically via JS -->
-        </div>
+        <div id="places-list" class="places-grid"></div>
 
-        <!-- Empty State (shown when no places) -->
+        <!-- Empty State -->
         <div id="empty-state" class="empty-state hidden">
           <div class="empty-state-content">
             <div class="empty-state-icon">📍</div>
@@ -87,36 +88,8 @@
 
     <!-- JavaScript -->
     <script src="js/db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/pages/index.js"></script>
     <script src="js/app.js"></script>
-
-    <!-- Service Worker Registration -->
-    <script>
-      // Register Service Worker
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("./service-worker.js")
-            .then((reg) => {
-              console.log("✅ SW registered", reg.scope);
-            })
-            .catch((err) => {
-              console.error("❌ SW registration failed", err);
-            });
-        });
-      }
-
-      // Track online/offline status
-      window.addEventListener("online", () => {
-        document.getElementById("online-status").innerHTML =
-          '<span class="status-dot status-online"></span><span class="status-text">Online</span>';
-        document.getElementById("offline-banner").classList.add("hidden");
-      });
-
-      window.addEventListener("offline", () => {
-        document.getElementById("online-status").innerHTML =
-          '<span class="status-dot status-offline"></span><span class="status-text">Offline</span>';
-        document.getElementById("offline-banner").classList.remove("hidden");
-      });
-    </script>
   </body>
 </html>

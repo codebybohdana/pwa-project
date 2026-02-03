@@ -55,11 +55,10 @@
             <div class="info-section" id="coordinates-section">
               <h3 class="info-label">🗺️ Location</h3>
 
-              <!-- Coordinates text -->
               <p id="place-coordinates" class="info-text coordinates-text">—</p>
 
-              <!-- Open on Google Maps button -->
-              
+              <!-- ✅ FIXED -->
+              <a
                 id="open-maps-btn"
                 href="#"
                 target="_blank"
@@ -69,10 +68,7 @@
                 📍 Open on Google Maps
               </a>
 
-              <!-- Mini map (OpenStreetMap iframe) -->
-              <div id="map-preview" class="map-container" style="display: none">
-                <!-- Map will be added via JS -->
-              </div>
+              <div id="map-preview" class="map-container" style="display: none"></div>
             </div>
 
             <!-- Date added -->
@@ -114,8 +110,8 @@
 
     <!-- JavaScript -->
     <script src="../js/db.js"></script>
-    <script src="../js/geolocation.js"></script>
     <script src="../js/utils.js"></script>
+    <script src="../js/geolocation.js"></script>
     <script src="../js/pages/placeDetails.js"></script>
     <script src="../js/app.js"></script>
   </body>

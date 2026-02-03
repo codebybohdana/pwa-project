@@ -212,13 +212,4 @@ async function searchPlaces(query) {
   }
 }
 
-// Initialize DB on load
-if (typeof window !== "undefined") {
-  window.addEventListener("DOMContentLoaded", () => {
-    initDB().catch((error) => {
-      console.error("❌ Critical DB initialization error:", error);
-    });
-  });
-}
-
 console.log("✅ db.js loaded");

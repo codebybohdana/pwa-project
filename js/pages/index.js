@@ -1,78 +1,132 @@
 /**
  * ========================================
- * UTILITY FUNCTIONS
+ * INDEX PAGE - Головна сторінка
  * ========================================
- * Helper functions for the entire app
  */
 
 /**
- * Show error message
+ * Ініціалізація головної сторінки
  */
-function showError(message) {
-  alert("❌ " + message);
-  console.error("Error:", message);
-}
+async function initIndexPage() {
+  console.log("📱 Ініціалізація головної сторінки...");
 
-/**
- * Show success message
- */
-function showSuccess(message) {
-  alert("✅ " + message);
-  console.log("Success:", message);
-}
-
-/**
- * Show/hide loading overlay
- */
-function showLoading(show) {
-  const overlay = document.getElementById("loading-overlay");
-  if (overlay) {
-    if (show) {
-      overlay.classList.remove("hidden");
-    } else {
-      overlay.classList.add("hidden");
-    }
+  try {
+    await loadAndDisplayPlaces();
+    setupSearch();
+  } catch (error) {
+    console.error("❌ Помилка:", error);
+    showError("Не вдалося завантажити місця");
   }
 }
 
 /**
- * Update online/offline status
+ * Завантажити і відобразити всі місця
  */
-function updateOnlineStatus() {
-  const statusElement = document.getElementById("online-status");
-  const offlineBanner = document.getElementById("offline-banner");
-
-  const updateStatus = () => {
-    const isOnline = navigator.onLine;
-
-    if (statusElement) {
-      statusElement.innerHTML = isOnline
-        ? '<span class="status-dot status-online"></span><span class="status-text">Online</span>'
-        : '<span class="status-dot status-offline"></span><span class="status-text">Offline</span>';
-    }
-
-    if (offlineBanner) {
-      if (isOnline) {
-        offlineBanner.classList.add("hidden");
-      } else {
-        offlineBanner.classList.remove("hidden");
-      }
-    }
-  };
-
-  updateStatus();
-  window.addEventListener("online", updateStatus);
-  window.addEventListener("offline", updateStatus);
+async function loadAndDisplayPlaces() {
+  try {
+    console.log("📍 Завантаження місць...");
+    const places = await getAllPlaces();
+    displayPlaces(places);
+  } catch (error) {
+    console.error("❌ Помилка завантаження:", error);
+    throw error;
+  }
 }
 
 /**
- * Escape HTML
+ * Відобразити місця на сторінці
  */
-function escapeHtml(text) {
-  if (!text) return "";
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+function displayPlaces(places) {
+  const placesList = document.getElementById("places-list");
+  const emptyState = document.getElementById("empty-state");
+
+  if (!placesList) return;
+
+  placesList.innerHTML = "";
+
+  if (places.length === 0) {
+    placesList.classList.add("hidden");
+    if (emptyState) emptyState.classList.remove("hidden");
+    return;
+  }
+
+  placesList.classList.remove("hidden");
+  if (emptyState) emptyState.classList.add("hidden");
+
+  places.forEach((place) => {
+    const card = createPlaceCard(place);
+    placesList.appendChild(card);
+  });
+
+  console.log(`✅ Відображено місць: ${places.length}`);
 }
 
-console.log("✅ utils.js loaded");
+/**
+ * Створити картку місця
+ */
+function createPlaceCard(place) {
+  const card = document.createElement("div");
+  card.className = "place-card";
+  card.onclick = () => goToPlaceDetails(place.id);
+
+  const photoSrc = place.photo || "images/placeholder.png";
+
+  let dateStr = "Дата не вказана";
+  if (place.timestamp) {
+    try {
+      dateStr = new Date(place.timestamp).toLocaleDateString("uk-UA", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (error) {
+      dateStr = new Date(place.timestamp).toLocaleDateString();
+    }
+  }
+
+  card.innerHTML = `
+      <img src="${photoSrc}" alt="${escapeHtml(
+    place.name
+  )}" class="place-card-image" onerror="this.src='images/placeholder.png'">
+      <div class="place-card-content">
+        <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
+        <p class="place-card-address">${escapeHtml(place.address)}</p>
+        <p class="place-card-meta">📅 ${dateStr}</p>
+      </div>
+    `;
+
+  return card;
+}
+
+/**
+ * Перейти на сторінку деталей
+ */
+function goToPlaceDetails(id) {
+  window.location.href = `pages/place-details.html?id=${id}`;
+}
+
+/**
+ * Налаштувати пошук
+ */
+function setupSearch() {
+  const searchInput = document.getElementById("search-input");
+  if (!searchInput) return;
+
+  let searchTimeout;
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      const query = e.target.value;
+      console.log("🔍 Пошук:", query);
+
+      try {
+        const results = await searchPlaces(query);
+        displayPlaces(results);
+      } catch (error) {
+        console.error("❌ Помилка пошуку:", error);
+      }
+    }, 300);
+  });
+}
+
+console.log("✅ index.js завантажено");

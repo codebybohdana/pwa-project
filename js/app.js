@@ -2,13 +2,11 @@
  * ========================================
  * MAIN APPLICATION
  * ========================================
- * Entry point - initialization only
+ * Entry point - initialization + SW registration
  */
 
-// Determine current page
 const currentPath = window.location.pathname;
 
-// Page checks
 function isIndexPage() {
   return (
     currentPath.endsWith("index.html") ||
@@ -25,15 +23,35 @@ function isDetailsPage() {
   return currentPath.includes("place-details.html");
 }
 
-// Main initialization
+/**
+ * Register Service Worker (works for all pages)
+ */
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("../service-worker.js")
+      .catch(() => {
+        // When we are on index.html, path is different
+        return navigator.serviceWorker.register("./service-worker.js");
+      })
+      .then((reg) => {
+        if (reg) console.log("✅ SW registered", reg.scope);
+      })
+      .catch((err) => console.error("❌ SW registration failed", err));
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("🚀 Starting app...");
 
   try {
-    // Initialize database
+    registerServiceWorker();
+
+    // init db once
     await initDB();
 
-    // Initialize appropriate page
     if (isIndexPage() && typeof initIndexPage === "function") {
       await initIndexPage();
     } else if (isAddPlacePage() && typeof initAddPlacePage === "function") {
@@ -42,7 +60,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       await initDetailsPage();
     }
 
-    // Always update online status
     if (typeof updateOnlineStatus === "function") {
       updateOnlineStatus();
     }
