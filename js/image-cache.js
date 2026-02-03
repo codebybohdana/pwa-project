@@ -1,142 +1,126 @@
 /**
- * IMAGE CACHE MODULE (Cache API)
- * Зберігає зображення в Cache API замість base64 в IndexedDB
+ * image-cache.js — Store place photos in Cache API (NOT base64 in IndexedDB)
+ * - saves: base64 -> Cache API under (basePath)/cached-images/<id>
+ * - reads: returns ObjectURL for display
+ * - deletes: removes from cache
  */
 
-const IMAGE_CACHE_NAME = "city-assistant-images-v1";
+(function () {
+  "use strict";
 
-/**
- * Конвертує base64 зображення в Blob
- */
-function base64ToBlob(base64, mimeType = "image/jpeg") {
-  // Визначаємо MIME тип з base64 рядка, якщо він присутній
-  const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
-  const detectedMimeType = base64.match(/data:([^;]+);/);
-  const finalMimeType = detectedMimeType ? detectedMimeType[1] : mimeType;
-  
-  const byteString = atob(base64Data);
-  const ab = new ArrayBuffer(byteString.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
+  // IMPORTANT: must match your SW images cache name version (v2 in my SW example)
+  const IMAGE_CACHE = "city-assistant-images-v2";
+
+  const getBasePath = () => {
+    // Works both for / and /subfolder/
+    const path = window.location.pathname;
+    if (path.endsWith("/index.html")) return path.replace("/index.html", "/");
+    if (path.includes("/pages/")) return path.split("/pages/")[0] + "/";
+    // if opened as /something/ keep folder
+    if (path.endsWith("/")) return path;
+    // default root
+    return "/";
+  };
+
+  const basePath = getBasePath();
+  const objectUrls = new Set();
+
+  function base64ToBlob(base64, defaultMime = "image/jpeg") {
+    const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
+    const detected = base64.match(/data:([^;]+);/);
+    const mime = detected ? detected[1] : defaultMime;
+
+    const byteString = atob(base64Data);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++)
+      ia[i] = byteString.charCodeAt(i);
+
+    return new Blob([ab], { type: mime });
   }
-  return new Blob([ab], { type: finalMimeType });
-}
 
-/**
- * Зберігає зображення в Cache API та повертає URL
- */
-async function saveImageToCache(imageData, imageId) {
-  try {
-    // Створюємо унікальний ID для зображення
-    const id = imageId || `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    // Використовуємо абсолютний шлях від кореня для універсальності
-    const imageUrl = `/cached-images/${id}`;
+  async function saveImageToCache(imageBase64, imageId) {
+    const id =
+      imageId || `img-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-    // Конвертуємо base64 в Blob
-    const blob = base64ToBlob(imageData);
+    // IMPORTANT: basePath-aware
+    const imageUrl = `${basePath}cached-images/${id}`;
+
+    const blob = base64ToBlob(imageBase64);
     const response = new Response(blob, {
-      headers: {
-        "Content-Type": "image/jpeg",
-      },
+      headers: { "Content-Type": blob.type || "image/jpeg" },
     });
 
-    // Відкриваємо кеш та зберігаємо зображення
-    const cache = await caches.open(IMAGE_CACHE_NAME);
+    const cache = await caches.open(IMAGE_CACHE);
     await cache.put(imageUrl, response);
+
+    // Store "virtual URL" in DB (string)
     return imageUrl;
-  } catch (error) {
-    console.error("❌ [saveImageToCache]", error?.message ?? error, error);
-    throw error;
-  }
-}
-
-/**
- * Отримує зображення з Cache API
- */
-async function getImageFromCache(imageUrl) {
-  try {
-  if (!imageUrl || !imageUrl.includes("/cached-images/")) {
-    return null;
   }
 
-    // Створюємо Request для пошуку в кеші
-    const request = new Request(imageUrl);
-    const cache = await caches.open(IMAGE_CACHE_NAME);
-    const cachedResponse = await cache.match(request);
+  async function getImageFromCache(imageUrl) {
+    if (!imageUrl || !imageUrl.includes("/cached-images/")) return null;
 
-    if (cachedResponse) {
-      const blob = await cachedResponse.blob();
-      return URL.createObjectURL(blob);
+    const cache = await caches.open(IMAGE_CACHE);
+    const res = await cache.match(new Request(imageUrl, { cache: "no-store" }));
+    if (!res) return null;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    objectUrls.add(url);
+    return url;
+  }
+
+  async function deleteImageFromCache(imageUrl) {
+    if (!imageUrl || !imageUrl.includes("/cached-images/")) return;
+    const cache = await caches.open(IMAGE_CACHE);
+    await cache.delete(new Request(imageUrl));
+  }
+
+  async function getImageUrl(photoData) {
+    if (!photoData || typeof photoData !== "string") return null;
+
+    if (photoData.startsWith("data:image")) return photoData;
+
+    if (photoData.includes("/cached-images/")) {
+      const cachedUrl = await getImageFromCache(photoData);
+      return cachedUrl || null;
     }
 
     return null;
-  } catch (error) {
-    console.error("❌ [getImageFromCache]", error?.message ?? error, error);
-    return null;
-  }
-}
-
-/**
- * Видаляє зображення з Cache API
- */
-async function deleteImageFromCache(imageUrl) {
-  try {
-    if (!imageUrl || !imageUrl.includes("/cached-images/")) {
-      return;
-    }
-
-    const request = new Request(imageUrl);
-    const cache = await caches.open(IMAGE_CACHE_NAME);
-    await cache.delete(request);
-  } catch (error) {
-    console.error("❌ [deleteImageFromCache]", error?.message ?? error, error);
-  }
-}
-
-/**
- * Отримує URL для відображення зображення
- * Підтримує як старі base64 URL, так і нові Cache API URL
- */
-async function getImageUrl(photoData) {
-  if (!photoData || typeof photoData !== "string") {
-    return null;
   }
 
-  // Якщо це вже URL (з Cache API або зовнішнє)
-  if (photoData.includes("/cached-images/")) {
-    const cachedUrl = await getImageFromCache(photoData);
-    return cachedUrl || photoData;
-  }
-
-  // Якщо це base64 (старий формат)
-  if (photoData.startsWith("data:image")) {
-    return photoData;
-  }
-
-  // Якщо порожнє або null
-  return null;
-}
-
-/**
- * Обробляє зображення перед збереженням
- * Конвертує base64 в Cache API URL
- */
-async function processImageForSave(imageData) {
-  if (!imageData || typeof imageData !== "string") {
+  async function processImageForSave(imageData) {
+    if (!imageData || typeof imageData !== "string") return "";
+    if (imageData.includes("/cached-images/")) return imageData;
+    if (imageData.startsWith("data:image"))
+      return await saveImageToCache(imageData);
     return "";
   }
 
-  // Якщо це вже Cache API URL, повертаємо як є
-  if (imageData.includes("/cached-images/")) {
-    return imageData;
+  function revokeObjectUrl(url) {
+    if (!url || typeof url !== "string") return;
+    if (!url.startsWith("blob:")) return;
+    if (objectUrls.has(url)) {
+      URL.revokeObjectURL(url);
+      objectUrls.delete(url);
+    }
   }
 
-  // Якщо це base64, зберігаємо в Cache API
-  if (imageData.startsWith("data:image")) {
-    return await saveImageToCache(imageData);
+  function revokeAllObjectUrls() {
+    objectUrls.forEach((u) => URL.revokeObjectURL(u));
+    objectUrls.clear();
   }
 
-  return "";
-}
-
+  window.CityImages = {
+    IMAGE_CACHE,
+    basePath,
+    saveImageToCache,
+    getImageFromCache,
+    deleteImageFromCache,
+    getImageUrl,
+    processImageForSave,
+    revokeObjectUrl,
+    revokeAllObjectUrls,
+  };
+})();

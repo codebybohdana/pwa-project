@@ -4,26 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="View place details, photo, notes and location." />
 
     <title>Place Details - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../images/icons/icon-192.png" />
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
   <body>
     <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="../index.html" class="back-button">← Back</a>
+        <a href="../index.html" class="back-button" aria-label="Back to list">← Back</a>
         <h1 class="header-title" id="place-name-header">Place Details</h1>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main" role="main">
       <div class="container">
-        <article class="place-details">
+        <article class="place-details" aria-label="Place details">
           <!-- Photo -->
           <div class="place-details-photo">
             <img
@@ -57,10 +59,12 @@
 
               <p id="place-coordinates" class="info-text coordinates-text">—</p>
 
-              
+              <!-- FIXED: missing <a ...> -->
+              <a
                 id="open-maps-btn"
                 href="#"
                 target="_blank"
+                rel="noopener"
                 class="button button-secondary"
                 style="margin-top: 12px; display: none"
               >
@@ -91,10 +95,10 @@
     </main>
 
     <!-- Delete Modal -->
-    <div id="delete-modal" class="modal hidden">
+    <div id="delete-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="delete-title">
       <div class="modal-overlay"></div>
       <div class="modal-content">
-        <h3>Delete place?</h3>
+        <h3 id="delete-title">Delete place?</h3>
         <p>This action cannot be undone.</p>
         <div class="modal-actions">
           <button id="confirm-delete-btn" class="button button-danger" aria-label="Confirm deletion">

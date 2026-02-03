@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
+    <meta name="robots" content="noindex" />
 
     <title>Offline - City Assistant</title>
 
@@ -27,7 +28,7 @@
 
       .offline-container {
         text-align: center;
-        max-width: 500px;
+        max-width: 520px;
       }
 
       .offline-icon {
@@ -37,8 +38,13 @@
       }
 
       @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
       }
 
       h1 {
@@ -127,25 +133,31 @@
       }
 
       @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
       }
     </style>
   </head>
-  <body>
-    <div class="offline-container">
-      <div class="offline-icon">📡</div>
 
-      <div class="status">
-        <span class="status-dot"></span>
+  <body>
+    <main class="offline-container" role="main" aria-labelledby="offline-title">
+      <div class="offline-icon" aria-hidden="true">📡</div>
+
+      <div class="status" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
         <span>No connection</span>
       </div>
 
-      <h1>You're Offline</h1>
+      <h1 id="offline-title">You're Offline</h1>
 
       <p>Don't worry! Your saved places are still available.</p>
 
-      <div class="features">
+      <section class="features" aria-label="Offline features">
         <h2>Available offline:</h2>
         <ul>
           <li>View saved places</li>
@@ -154,18 +166,21 @@
           <li>Edit and delete</li>
           <li>View photos</li>
         </ul>
-      </div>
+      </section>
 
-      <a href="/index.html" class="button">📍 Go to Saved Places</a>
+      <!-- IMPORTANT: relative link (works on Netlify + subfolders) -->
+      <a href="../index.html" class="button">📍 Go to Saved Places</a>
 
       <p style="margin-top: 24px; font-size: 14px; opacity: 0.7">
         Connect to the internet for full functionality
       </p>
-    </div>
+    </main>
 
     <script>
+      // Redirect back to app when connection returns
       window.addEventListener("online", () => {
-        window.location.href = "/index.html";
+        // offline.html lives in /pages/, so go up one level
+        window.location.href = "../index.html";
       });
     </script>
   </body>

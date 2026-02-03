@@ -2,12 +2,16 @@
   "name": "City Assistant - Offline PWA",
   "short_name": "City Assistant",
   "description": "Save your favorite city places and use them offline",
-  "start_url": "/",
-  "scope": "/",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#f8fafc",
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
+  "categories": ["travel", "productivity", "utilities"],
+  "lang": "en",
   "icons": [
     {
       "src": "images/icons/icon-72.png",

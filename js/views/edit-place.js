@@ -1,321 +1,257 @@
 /**
- * EDIT PLACE PAGE
+ * views/edit-place.js — edit place form
  */
 
-let currentPlaceId = null;
-let currentPlace = null;
-let newPhoto = null;
-let newCoordinates = null;
+(function () {
+  "use strict";
 
-async function initEditPage() {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    currentPlaceId = urlParams.get("id");
+  let currentPlaceId = null;
+  let currentPlace = null;
 
-    if (!currentPlaceId) {
-      throw new Error("Place ID not found");
-    }
+  let newPhoto = null;
+  let newCoordinates = null;
 
-    await loadPlaceForEditing(parseInt(currentPlaceId));
-
-    setupEditForm();
-    setupChangePhotoButton();
-    setupChooseNewPhotoButton();
-    setupUpdateLocationButton();
-    setupNavigationButtons();
-  } catch (error) {
-    console.error("❌ [initEditPage]", error?.message ?? error, error);
-    showError("Error: " + (error?.message ?? ""));
-    setTimeout(() => {
-      window.location.href = "../index.html";
-    }, 2000);
-  }
-}
-
-async function loadPlaceForEditing(id) {
-  try {
-    const place = await getPlaceById(id);
-
-    if (!place) {
-      throw new Error("Place not found");
-    }
-
+  async function loadPlaceForEditing(id) {
+    const place = await window.CityDB.getPlaceById(id);
+    if (!place) throw new Error("Place not found");
     currentPlace = place;
-    fillFormWithPlaceData(place);
-  } catch (error) {
-    console.error("❌ [loadPlaceForEditing]", id, error?.message ?? error, error);
-    throw error;
+    fillForm(place);
   }
-}
 
-function fillFormWithPlaceData(place) {
-  const nameInput = document.getElementById("place-name");
-  if (nameInput) nameInput.value = place.name || "";
+  function fillForm(place) {
+    document.getElementById("place-name").value = place.name || "";
+    document.getElementById("place-address").value = place.address || "";
+    document.getElementById("place-notes").value = place.notes || "";
 
-  const addressInput = document.getElementById("place-address");
-  if (addressInput) addressInput.value = place.address || "";
+    const img = document.getElementById("current-photo-img");
+    img.src = "../images/placeholder.png";
 
-  const notesInput = document.getElementById("place-notes");
-  if (notesInput) notesInput.value = place.notes || "";
-
-  const currentPhotoImg = document.getElementById("current-photo-img");
-  if (currentPhotoImg) {
-    currentPhotoImg.src = "../images/placeholder.png";
     if (place.photo) {
-      getImageUrl(place.photo).then((url) => {
-        if (url) {
-          currentPhotoImg.src = url;
-        }
-      }).catch((err) => {
-        console.error("❌ [fillFormWithPlaceData] getImageUrl failed:", err?.message ?? err);
-        currentPhotoImg.src = "../images/placeholder.png";
+      window.CityImages.getImageUrl(place.photo).then((url) => {
+        if (!url) return;
+        window.CityImages.revokeObjectUrl(img.dataset.blobUrl);
+        img.dataset.blobUrl = url.startsWith("blob:") ? url : "";
+        img.src = url;
       });
     }
-    currentPhotoImg.onerror = function () {
-      this.src = "../images/placeholder.png";
-    };
-  }
+    img.onerror = () => (img.src = "../images/placeholder.png");
 
-  const currentCoordsGroup = document.getElementById("current-coords-group");
-  const currentCoordsValue = document.getElementById(
-    "current-coordinates-value"
-  );
-  const currentMapsBtn = document.getElementById("current-location-maps-btn");
+    const value = document.getElementById("current-coordinates-value");
+    const mapsBtn = document.getElementById("current-location-maps-btn");
 
-  if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
-    const formatted = formatCoordinates(
-      place.coordinates.lat,
-      place.coordinates.lng
-    );
-
-    if (currentCoordsValue) {
-      currentCoordsValue.textContent = formatted;
-    }
-
-    if (currentCoordsGroup) {
-      currentCoordsGroup.classList.remove("hidden");
-    }
-
-    if (currentMapsBtn) {
-      const mapsUrl = `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`;
-      currentMapsBtn.href = mapsUrl;
-      currentMapsBtn.style.display = "inline-flex";
-    }
-  } else {
-    if (currentCoordsValue) {
-      currentCoordsValue.textContent = "Coordinates not specified";
-    }
-    if (currentMapsBtn) {
-      currentMapsBtn.style.display = "none";
+    if (place.coordinates?.lat && place.coordinates?.lng) {
+      const { lat, lng } = place.coordinates;
+      value.textContent = window.CityGeo.formatCoordinates(lat, lng);
+      mapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      mapsBtn.style.display = "inline-flex";
+    } else {
+      value.textContent = "Coordinates not specified";
+      mapsBtn.style.display = "none";
     }
   }
-}
 
-function setupEditForm() {
-  const form = document.getElementById("edit-place-form");
-  if (!form) return;
+  function setupNavigationButtons() {
+    const backBtn = document.getElementById("back-button");
+    const cancelBtn = document.getElementById("cancel-btn");
+    if (backBtn) backBtn.href = `place-details.html?id=${currentPlaceId}`;
+    if (cancelBtn) cancelBtn.href = `place-details.html?id=${currentPlaceId}`;
+  }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await handleEditFormSubmit();
-  });
-}
+  function setupEditForm() {
+    const form = document.getElementById("edit-place-form");
+    if (!form) return;
 
-async function handleEditFormSubmit() {
-  try {
-    showLoading(true);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const name = document.getElementById("place-name").value.trim();
-    const address = document.getElementById("place-address").value.trim();
-    const notes = document.getElementById("place-notes").value.trim();
+      try {
+        window.CityUtils.showLoading(true);
 
-    if (!name || !address) {
-      throw new Error("Please fill in required fields");
-    }
+        const name = document.getElementById("place-name").value.trim();
+        const address = document.getElementById("place-address").value.trim();
+        const notes = document.getElementById("place-notes").value.trim();
 
-    const updatedPlace = {
-      ...currentPlace,
-      name,
-      address,
-      notes: notes || "",
-    };
+        if (!name || !address)
+          throw new Error("Please fill in required fields");
 
-    // Обробляємо нове зображення через Cache API
-    if (newPhoto) {
-      updatedPlace.photo = await processImageForSave(newPhoto);
-      // Видаляємо старе зображення з кешу, якщо воно було в Cache API
-      if (currentPlace.photo && currentPlace.photo.startsWith("/cached-images/")) {
-        await deleteImageFromCache(currentPlace.photo);
+        const updated = {
+          ...currentPlace,
+          name,
+          address,
+          notes: notes || "",
+          timestamp: Date.now(),
+        };
+
+        if (newPhoto) {
+          updated.photo = await window.CityImages.processImageForSave(newPhoto);
+          if (
+            currentPlace.photo &&
+            currentPlace.photo.includes("/cached-images/")
+          ) {
+            await window.CityImages.deleteImageFromCache(currentPlace.photo);
+          }
+        }
+
+        if (newCoordinates) updated.coordinates = newCoordinates;
+
+        await window.CityDB.updatePlace(currentPlaceId, updated);
+
+        window.CityUtils.showSuccess("Changes saved successfully!");
+        setTimeout(
+          () =>
+            (window.location.href = `place-details.html?id=${currentPlaceId}`),
+          700
+        );
+      } catch (e2) {
+        console.error("[editPlace]", e2);
+        window.CityUtils.showError(e2?.message || "Save failed");
+      } finally {
+        window.CityUtils.showLoading(false);
       }
-    }
-
-    if (newCoordinates) {
-      updatedPlace.coordinates = newCoordinates;
-    }
-
-    updatedPlace.timestamp = Date.now();
-
-    await updatePlace(currentPlaceId, updatedPlace);
-
-    showSuccess("Changes saved successfully!");
-    setTimeout(() => {
-      window.location.href = `place-details.html?id=${currentPlaceId}`;
-    }, 1000);
-  } catch (error) {
-    console.error("❌ [handleEditFormSubmit]", error?.message ?? error, error);
-    showError(error?.message ?? "Save failed");
-  } finally {
-    showLoading(false);
+    });
   }
-}
 
-function setupChangePhotoButton() {
-  const btn = document.getElementById("change-photo-btn");
-  if (!btn) return;
+  function setupChangePhotoButton() {
+    const btn = document.getElementById("change-photo-btn");
+    const preview = document.getElementById("new-photo-preview");
+    const img = document.getElementById("new-photo-img");
+    const removeBtn = document.getElementById("remove-new-photo-btn");
 
-  btn.addEventListener("click", async () => {
-    try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Opening camera...";
+    if (!btn || !preview || !img || !removeBtn) return;
 
-      const photoData = await takePhoto();
-      newPhoto = photoData;
+    btn.addEventListener("click", async () => {
+      try {
+        btn.disabled = true;
+        btn.textContent = "⏳ Opening camera...";
 
-      const preview = document.getElementById("new-photo-preview");
-      const img = document.getElementById("new-photo-img");
+        const base64 = await window.CityCamera.takePhoto();
+        newPhoto = base64;
 
-      if (preview && img) {
-        img.src = photoData;
+        img.src = base64;
         preview.classList.remove("hidden");
-      }
 
-      const removeBtn = document.getElementById("remove-new-photo-btn");
-      if (removeBtn) {
         removeBtn.onclick = () => {
           newPhoto = null;
           preview.classList.add("hidden");
           btn.textContent = "📸 Take New Photo";
         };
+
+        btn.textContent = "✅ New photo ready";
+      } catch (e) {
+        console.error("[changePhoto]", e);
+        window.CityUtils.showError(e?.message || "Camera failed");
+        btn.textContent = "📸 Try again";
+      } finally {
+        btn.disabled = false;
       }
+    });
+  }
 
-      btn.textContent = "✅ New photo ready";
-    } catch (error) {
-      console.error("❌ [change-photo]", error?.message ?? error, error);
-      showError(error?.message ?? "Camera failed");
-      btn.textContent = "📸 Try again";
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
+  function setupChooseNewPhotoButton() {
+    const btn = document.getElementById("choose-new-photo-btn");
+    const input = document.getElementById("new-photo-file-input");
+    const preview = document.getElementById("new-photo-preview");
+    const img = document.getElementById("new-photo-img");
+    const removeBtn = document.getElementById("remove-new-photo-btn");
 
-function setupChooseNewPhotoButton() {
-  const btn = document.getElementById("choose-new-photo-btn");
-  const fileInput = document.getElementById("new-photo-file-input");
+    if (!btn || !input || !preview || !img || !removeBtn) return;
 
-  if (!btn || !fileInput) return;
+    btn.addEventListener("click", () => input.click());
 
-  btn.addEventListener("click", () => {
-    fileInput.click();
-  });
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      if (!file) return;
 
-  fileInput.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+      try {
+        btn.disabled = true;
+        btn.textContent = "⏳ Loading...";
 
-    try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Loading...";
+        if (!file.type.startsWith("image/"))
+          throw new Error("Please select an image file");
+        if (file.size > 10 * 1024 * 1024)
+          throw new Error("File too large. Maximum 10MB");
 
-      if (!file.type.startsWith("image/")) {
-        throw new Error("Please select an image file");
-      }
+        const base64 = await window.CityUtils.fileToBase64(file);
+        const compressed = await window.CityUtils.compressPhoto(base64);
 
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error("File too large. Maximum 10MB");
-      }
-
-      const photoData = await fileToBase64(file);
-      const compressed = await compressPhoto(photoData);
-      newPhoto = compressed;
-
-      const preview = document.getElementById("new-photo-preview");
-      const img = document.getElementById("new-photo-img");
-
-      if (preview && img) {
+        newPhoto = compressed;
         img.src = compressed;
         preview.classList.remove("hidden");
-      }
 
-      const removeBtn = document.getElementById("remove-new-photo-btn");
-      if (removeBtn) {
         removeBtn.onclick = () => {
           newPhoto = null;
           preview.classList.add("hidden");
           btn.textContent = "🖼️ Choose from Gallery";
         };
+
+        btn.textContent = "✅ Photo selected";
+      } catch (e) {
+        console.error("[chooseNewPhoto]", e);
+        window.CityUtils.showError(e?.message || "Photo load failed");
+        btn.textContent = "🖼️ Try again";
+      } finally {
+        btn.disabled = false;
+        input.value = "";
       }
+    });
+  }
 
-      btn.textContent = "✅ Photo selected";
-    } catch (error) {
-      console.error("❌ [choose-new-photo]", error?.message ?? error, error);
-      showError(error?.message ?? "Photo load failed");
-      btn.textContent = "🖼️ Try again";
-    } finally {
-      btn.disabled = false;
-      fileInput.value = "";
-    }
-  });
-}
+  function setupUpdateLocationButton() {
+    const btn = document.getElementById("update-location-btn");
+    if (!btn) return;
 
-function setupUpdateLocationButton() {
-  const btn = document.getElementById("update-location-btn");
-  if (!btn) return;
+    btn.addEventListener("click", async () => {
+      try {
+        btn.disabled = true;
+        btn.textContent = "⏳ Getting location...";
 
-  btn.addEventListener("click", async () => {
+        const coords = await window.CityGeo.getCurrentPosition();
+        newCoordinates = coords;
+
+        const value = document.getElementById("new-coordinates-value");
+        const box = document.getElementById("new-coordinates-display");
+        const previewBtn = document.getElementById("preview-new-location");
+
+        if (value && box) {
+          value.textContent = window.CityGeo.formatCoordinates(
+            coords.lat,
+            coords.lng
+          );
+          box.classList.remove("hidden");
+        }
+
+        if (previewBtn) {
+          previewBtn.href = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+          previewBtn.style.display = "inline-flex";
+        }
+
+        btn.textContent = "✅ New location obtained";
+      } catch (e) {
+        console.error("[updateLocation]", e);
+        window.CityUtils.showError(e?.message || "Location failed");
+        btn.textContent = "📍 Try again";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  window.initEditPage = async function initEditPage() {
     try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Getting location...";
+      const params = new URLSearchParams(window.location.search);
+      currentPlaceId = params.get("id");
+      if (!currentPlaceId) throw new Error("Place ID not found");
 
-      const coords = await getCurrentPosition();
-      newCoordinates = coords;
-
-      const formatted = formatCoordinates(coords.lat, coords.lng);
-      const display = document.getElementById("new-coordinates-display");
-      const value = document.getElementById("new-coordinates-value");
-
-      if (display && value) {
-        value.textContent = formatted;
-        display.classList.remove("hidden");
-      }
-
-      const previewBtn = document.getElementById("preview-new-location");
-      if (previewBtn) {
-        const mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
-        previewBtn.href = mapsUrl;
-        previewBtn.style.display = "inline-flex";
-      }
-
-      btn.textContent = "✅ New location obtained";
-    } catch (error) {
-      console.error("❌ [update-location]", error?.message ?? error, error);
-      showError(error?.message ?? "Location failed");
-      btn.textContent = "📍 Try again";
-    } finally {
-      btn.disabled = false;
+      await loadPlaceForEditing(Number(currentPlaceId));
+      setupNavigationButtons();
+      setupEditForm();
+      setupChangePhotoButton();
+      setupChooseNewPhotoButton();
+      setupUpdateLocationButton();
+    } catch (e) {
+      console.error("[initEditPage]", e);
+      window.CityUtils?.showError?.("Failed to load edit page");
+      setTimeout(() => (window.location.href = "../index.html"), 900);
     }
-  });
-}
-
-function setupNavigationButtons() {
-  const backBtn = document.getElementById("back-button");
-  if (backBtn) {
-    backBtn.href = `place-details.html?id=${currentPlaceId}`;
-  }
-
-  const cancelBtn = document.getElementById("cancel-btn");
-  if (cancelBtn) {
-    cancelBtn.href = `place-details.html?id=${currentPlaceId}`;
-  }
-}
-
+  };
+})();

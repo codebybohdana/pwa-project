@@ -4,24 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
+    <meta
+      name="description"
+      content="Edit saved place details, photo and location."
+    />
 
     <title>Edit Place - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../images/icons/icon-192.png" />
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
   <body>
     <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="#" id="back-button" class="back-button">← Back</a>
+        <a
+          href="../index.html"
+          id="back-button"
+          class="back-button"
+          aria-label="Back"
+          >← Back</a
+        >
         <h1 class="header-title">Edit Place</h1>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main" role="main">
       <div class="container">
         <form id="edit-place-form" class="form" aria-label="Edit place form">
           <!-- Place Name -->
@@ -60,17 +71,18 @@
 
           <!-- Notes -->
           <div class="form-group">
-            <label for="place-notes" class="form-label">
-              Notes (optional)
-            </label>
+            <label for="place-notes" class="form-label">Notes (optional)</label>
             <textarea
               id="place-notes"
               class="form-textarea"
               placeholder="Add your notes..."
               rows="4"
               maxlength="500"
+              aria-describedby="notes-hint"
             ></textarea>
-            <span class="form-hint">Maximum 500 characters</span>
+            <span id="notes-hint" class="form-hint"
+              >Maximum 500 characters</span
+            >
           </div>
 
           <!-- Current Photo -->
@@ -81,6 +93,7 @@
                 id="current-photo-img"
                 src="../images/placeholder.png"
                 alt="Current photo"
+                loading="lazy"
               />
             </div>
           </div>
@@ -89,12 +102,12 @@
           <div class="form-group">
             <label class="form-label">Change Photo (optional)</label>
 
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap">
               <button
                 type="button"
                 id="change-photo-btn"
                 class="button button-secondary"
-                style="flex: 1; min-width: 180px;"
+                style="flex: 1; min-width: 180px"
                 aria-label="Take a new photo using camera"
               >
                 📸 Take New Photo
@@ -104,7 +117,7 @@
                 type="button"
                 id="choose-new-photo-btn"
                 class="button button-secondary"
-                style="flex: 1; min-width: 180px;"
+                style="flex: 1; min-width: 180px"
                 aria-label="Choose new photo from gallery"
               >
                 🖼️ Choose from Gallery
@@ -115,11 +128,20 @@
               type="file"
               id="new-photo-file-input"
               accept="image/*"
-              style="display: none;"
+              style="display: none"
             />
 
-            <div id="new-photo-preview" class="photo-preview hidden">
-              <img id="new-photo-img" src="" alt="New photo" loading="lazy" />
+            <div
+              id="new-photo-preview"
+              class="photo-preview hidden"
+              aria-live="polite"
+            >
+              <img
+                id="new-photo-img"
+                src=""
+                alt="New photo preview"
+                loading="lazy"
+              />
               <button
                 type="button"
                 id="remove-new-photo-btn"
@@ -143,6 +165,7 @@
                 id="current-location-maps-btn"
                 href="#"
                 target="_blank"
+                rel="noopener"
                 class="button button-outline"
                 style="
                   margin-top: 12px;
@@ -168,7 +191,11 @@
               📍 Get New Location
             </button>
 
-            <div id="new-coordinates-display" class="coordinates-box hidden">
+            <div
+              id="new-coordinates-display"
+              class="coordinates-box hidden"
+              aria-live="polite"
+            >
               <p class="coordinates-text">
                 📍 New: <span id="new-coordinates-value"></span>
               </p>
@@ -176,6 +203,7 @@
                 id="preview-new-location"
                 href="#"
                 target="_blank"
+                rel="noopener"
                 class="button button-outline"
                 style="
                   margin-top: 12px;
@@ -191,10 +219,19 @@
 
           <!-- Buttons -->
           <div class="form-actions">
-            <button type="submit" class="button button-primary button-full">
+            <button
+              type="submit"
+              class="button button-primary button-full"
+              aria-label="Save changes"
+            >
               💾 Save Changes
             </button>
-            <a href="#" id="cancel-btn" class="button button-outline button-full">
+            <a
+              href="../index.html"
+              id="cancel-btn"
+              class="button button-outline button-full"
+              aria-label="Cancel"
+            >
               Cancel
             </a>
           </div>
@@ -203,8 +240,13 @@
     </main>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay hidden">
-      <div class="loading-spinner"></div>
+    <div
+      id="loading-overlay"
+      class="loading-overlay hidden"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="loading-spinner" aria-hidden="true"></div>
       <p>Saving...</p>
     </div>
 

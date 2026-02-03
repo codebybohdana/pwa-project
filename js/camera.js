@@ -1,56 +1,74 @@
 /**
- * CAMERA MODULE
+ * camera.js — Take photo via MediaDevices
  */
 
-function isCameraAvailable() {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-}
+(function () {
+  "use strict";
 
-async function takePhoto() {
-  if (!isCameraAvailable()) {
-    throw new Error("Camera not supported on this device");
+  function isCameraAvailable() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   }
 
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-      },
-    });
+  async function takePhoto() {
+    if (!isCameraAvailable())
+      throw new Error("Camera not supported on this device");
 
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.setAttribute("playsinline", "true");
-    video.style.display = "none";
-    document.body.appendChild(video);
+    let stream = null;
+    let video = null;
 
-    await video.play();
-    await new Promise((r) => setTimeout(r, 500));
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
 
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const photoData = canvas.toDataURL("image/jpeg", 0.8);
+      video = document.createElement("video");
+      video.srcObject = stream;
+      video.setAttribute("playsinline", "true");
+      video.style.position = "fixed";
+      video.style.left = "-9999px";
+      video.style.top = "-9999px";
+      document.body.appendChild(video);
 
-    stream.getTracks().forEach((track) => track.stop());
-    video.remove();
+      await video.play();
+      await new Promise((r) => setTimeout(r, 400));
 
-    return photoData;
-  } catch (error) {
-    console.error("❌ [takePhoto]", error?.name ?? "Error", error?.message ?? error, error);
-    if (error.name === "NotAllowedError") {
-      throw new Error("Camera access denied. Please allow access in settings.");
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      return canvas.toDataURL("image/jpeg", 0.8);
+    } catch (error) {
+      const name = error?.name || "";
+      if (name === "NotAllowedError")
+        throw new Error(
+          "Camera access denied. Please allow access in settings."
+        );
+      if (name === "NotFoundError")
+        throw new Error("Camera not found on this device.");
+      if (name === "NotReadableError")
+        throw new Error("Camera is already in use by another app.");
+      throw error;
+    } finally {
+      try {
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+      } catch {}
+      try {
+        if (video) video.remove();
+      } catch {}
     }
-    if (error.name === "NotFoundError") {
-      throw new Error("Camera not found on this device.");
-    }
-    if (error.name === "NotReadableError") {
-      throw new Error("Camera is already in use by another app.");
-    }
-    throw error;
   }
-}
+
+  window.CityCamera = {
+    isCameraAvailable,
+    takePhoto,
+  };
+})();

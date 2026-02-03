@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Save your favorite city places offline" />
+    <meta name="description" content="Save your favorite city places and use them offline." />
 
     <title>City Assistant - PWA</title>
 
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/png" href="images/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="images/icons/icon-192.png" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -17,6 +18,7 @@
     <header class="header">
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
+
         <div id="online-status" class="online-status" role="status" aria-live="polite">
           <span class="status-dot status-online" aria-hidden="true"></span>
           <span class="status-text">Online</span>
@@ -32,10 +34,10 @@
     </div>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main" role="main">
       <div class="container">
         <!-- Search Bar -->
-        <div class="search-section">
+        <section class="search-section" aria-label="Search">
           <div class="search-bar">
             <label for="search-input" class="sr-only">Search places</label>
             <input
@@ -47,11 +49,11 @@
               aria-label="Search places"
             />
           </div>
-        </div>
+        </section>
 
         <!-- Add Place Button -->
         <div class="actions">
-          <a href="pages/add-place.html" class="button button-primary">
+          <a href="pages/add-place.html" class="button button-primary" aria-label="Add a new place">
             ➕ Add Place
           </a>
         </div>
@@ -60,9 +62,9 @@
         <div id="places-list" class="places-grid" role="list" aria-label="List of saved places"></div>
 
         <!-- Empty State -->
-        <div id="empty-state" class="empty-state hidden">
+        <div id="empty-state" class="empty-state hidden" role="status" aria-live="polite">
           <div class="empty-state-content">
-            <div class="empty-state-icon">📍</div>
+            <div class="empty-state-icon" aria-hidden="true">📍</div>
             <h2>No saved places</h2>
             <p>Add your first favorite place to get started!</p>
             <a href="pages/add-place.html" class="button button-primary">

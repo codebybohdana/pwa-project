@@ -4,24 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="Add a new place with photo and GPS location." />
 
     <title>Add Place - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="../images/icons/icon-192.png" />
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
   <body>
     <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="../index.html" class="back-button">← Back</a>
+        <a href="../index.html" class="back-button" aria-label="Back to list">← Back</a>
         <h1 class="header-title">Add Place</h1>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main" role="main">
       <div class="container">
         <form id="add-place-form" class="form" aria-label="Add new place form">
           <!-- Place Name -->
@@ -64,9 +66,7 @@
 
           <!-- Notes -->
           <div class="form-group">
-            <label for="place-notes" class="form-label">
-              Notes (optional)
-            </label>
+            <label for="place-notes" class="form-label">Notes (optional)</label>
             <textarea
               id="place-notes"
               class="form-textarea"
@@ -90,7 +90,7 @@
               📍 Get My Location
             </button>
 
-            <div id="coordinates-display" class="coordinates-box hidden">
+            <div id="coordinates-display" class="coordinates-box hidden" aria-live="polite">
               <p class="coordinates-text">
                 📍 <span id="coordinates-value"></span>
               </p>
@@ -98,13 +98,9 @@
                 id="preview-on-map"
                 href="#"
                 target="_blank"
+                rel="noopener"
                 class="button button-outline"
-                style="
-                  margin-top: 12px;
-                  font-size: 14px;
-                  padding: 10px 16px;
-                  display: none;
-                "
+                style="margin-top: 12px; font-size: 14px; padding: 10px 16px; display: none;"
               >
                 🗺️ View on Google Maps
               </a>
@@ -137,21 +133,11 @@
               </button>
             </div>
 
-            <input
-              type="file"
-              id="photo-file-input"
-              accept="image/*"
-              style="display: none;"
-            />
+            <input type="file" id="photo-file-input" accept="image/*" style="display: none;" />
 
-            <div id="photo-preview" class="photo-preview hidden">
-              <img id="photo-preview-img" src="" alt="Preview" loading="lazy" />
-              <button
-                type="button"
-                id="remove-photo-btn"
-                class="button-remove-photo"
-                aria-label="Remove photo"
-              >
+            <div id="photo-preview" class="photo-preview hidden" aria-live="polite">
+              <img id="photo-preview-img" src="" alt="Selected photo preview" loading="lazy" />
+              <button type="button" id="remove-photo-btn" class="button-remove-photo" aria-label="Remove photo">
                 ✕
               </button>
             </div>
@@ -159,10 +145,10 @@
 
           <!-- Buttons -->
           <div class="form-actions">
-            <button type="submit" class="button button-primary button-full">
+            <button type="submit" class="button button-primary button-full" aria-label="Save place">
               💾 Save Place
             </button>
-            <a href="../index.html" class="button button-outline button-full">
+            <a href="../index.html" class="button button-outline button-full" aria-label="Cancel and go back">
               Cancel
             </a>
           </div>
@@ -171,8 +157,8 @@
     </main>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay hidden">
-      <div class="loading-spinner"></div>
+    <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
       <p>Saving...</p>
     </div>
 
