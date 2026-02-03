@@ -108,15 +108,37 @@
           <!-- Фото -->
           <div class="form-group">
             <label class="form-label">Фото місця</label>
-            <button
-              type="button"
-              id="take-photo-btn"
-              class="button button-secondary"
-            >
-              📸 Зробити фото
-            </button>
+            
+            <!-- Кнопки вибору фото -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button
+                type="button"
+                id="take-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
+                📸 Зробити фото
+              </button>
+              
+              <button
+                type="button"
+                id="choose-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
+                🖼️ Вибрати з галереї
+              </button>
+            </div>
 
-            <!-- Превью фото (приховано поки не зробимо фото) -->
+            <!-- Прихований input для вибору файлу -->
+            <input
+              type="file"
+              id="photo-file-input"
+              accept="image/*"
+              style="display: none;"
+            />
+
+            <!-- Превью фото -->
             <div id="photo-preview" class="photo-preview hidden">
               <img id="photo-preview-img" src="" alt="Preview" />
               <button
@@ -152,6 +174,8 @@
     <script src="../js/db.js"></script>
     <script src="../js/camera.js"></script>
     <script src="../js/geolocation.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/addPlace.js"></script>
     <script src="../js/app.js"></script>
   </body>
 </html>

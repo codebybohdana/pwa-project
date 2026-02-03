@@ -86,13 +86,35 @@
           <!-- Змінити фото -->
           <div class="form-group">
             <label class="form-label">Змінити фото (опціонально)</label>
-            <button
-              type="button"
-              id="change-photo-btn"
-              class="button button-secondary"
-            >
-              📸 Зробити нове фото
-            </button>
+            
+            <!-- Кнопки вибору фото -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button
+                type="button"
+                id="change-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
+                📸 Зробити нове фото
+              </button>
+              
+              <button
+                type="button"
+                id="choose-new-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
+                🖼️ Вибрати з галереї
+              </button>
+            </div>
+
+            <!-- Прихований input -->
+            <input
+              type="file"
+              id="new-photo-file-input"
+              accept="image/*"
+              style="display: none;"
+            />
 
             <!-- Превью нового фото -->
             <div id="new-photo-preview" class="photo-preview hidden">
@@ -114,6 +136,27 @@
               <p class="coordinates-text">
                 📍 <span id="current-coordinates-value"></span>
               </p>
+              
+              <!-- Кнопка Google Maps -->
+              
+                id="current-location-maps-btn"
+                href="#"
+                target="_blank"
+                class="button button-outline"
+                style="
+                  margin-top: 12px;
+                  font-size: 14px;
+                  padding: 10px 16px;
+                  display: none;
+                "
+              >
+                📍 Відкрити на Google Maps
+              </a>
+
+              <!-- ДОДАТИ: Міні-карта поточних координат -->
+              <div id="current-map-preview" class="map-container" style="display: none; margin-top: 16px;">
+                <!-- Карта буде додана через JS -->
+              </div>
             </div>
           </div>
 
