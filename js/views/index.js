@@ -3,24 +3,21 @@
  */
 
 async function initIndexPage() {
-  console.log("📱 Initializing index page...");
-
   try {
     await loadAndDisplayPlaces();
     setupSearch();
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("❌ [initIndexPage]", error?.message ?? error, error);
     showError("Failed to load places");
   }
 }
 
 async function loadAndDisplayPlaces() {
   try {
-    console.log("📍 Loading places...");
     const places = await getAllPlaces();
     displayPlaces(places);
   } catch (error) {
-    console.error("❌ Loading error:", error);
+    console.error("❌ [loadAndDisplayPlaces]", error?.message ?? error, error);
     throw error;
   }
 }
@@ -46,16 +43,21 @@ function displayPlaces(places) {
     const card = createPlaceCard(place);
     placesList.appendChild(card);
   });
-
-  console.log(`✅ Displayed ${places.length} places`);
 }
 
 function createPlaceCard(place) {
   const card = document.createElement("div");
   card.className = "place-card";
+  card.setAttribute("role", "listitem");
+  card.setAttribute("tabindex", "0");
+  card.setAttribute("aria-label", `Place: ${escapeHtml(place.name)}`);
   card.onclick = () => goToPlaceDetails(place.id);
-
-  const photoSrc = place.photo || "images/placeholder.png";
+  card.onkeydown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      goToPlaceDetails(place.id);
+    }
+  };
 
   let dateStr = "Date not specified";
   if (place.timestamp) {
@@ -71,15 +73,30 @@ function createPlaceCard(place) {
   }
 
   card.innerHTML = `
-    <img src="${photoSrc}" alt="${escapeHtml(
+    <img src="images/placeholder.png" alt="${escapeHtml(
     place.name
-  )}" class="place-card-image" onerror="this.src='images/placeholder.png'">
+  )}" class="place-card-image" loading="lazy" onerror="this.src='images/placeholder.png'">
     <div class="place-card-content">
       <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
       <p class="place-card-address">${escapeHtml(place.address)}</p>
       <p class="place-card-meta">📅 ${dateStr}</p>
     </div>
   `;
+
+  // Асинхронно завантажуємо зображення з Cache API або використовуємо base64
+  const img = card.querySelector(".place-card-image");
+  if (place.photo) {
+    getImageUrl(place.photo).then((url) => {
+      if (url) {
+        img.src = url;
+      } else {
+        img.src = "images/placeholder.png";
+      }
+    }).catch((err) => {
+      console.error("❌ [createPlaceCard] getImageUrl failed:", place.id, err?.message ?? err);
+      img.src = "images/placeholder.png";
+    });
+  }
 
   return card;
 }
@@ -93,20 +110,17 @@ function setupSearch() {
   if (!searchInput) return;
 
   let searchTimeout;
-  searchInput.addEventListener("input", (e) => {
+    searchInput.addEventListener("input", (e) => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
       const query = e.target.value;
-      console.log("🔍 Search:", query);
-
       try {
         const results = await searchPlaces(query);
         displayPlaces(results);
       } catch (error) {
-        console.error("❌ Search error:", error);
+        console.error("❌ [search]", query, error?.message ?? error, error);
       }
     }, 300);
   });
 }
 
-console.log("✅ index.js loaded");

@@ -25,8 +25,6 @@ function isEditPage() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🚀 Starting app...");
-
   try {
     await initDB();
 
@@ -43,12 +41,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (typeof updateOnlineStatus === "function") {
       updateOnlineStatus();
     }
-
-    console.log("✅ App initialized");
   } catch (error) {
-    console.error("❌ Critical error:", error);
-    alert("Error loading app: " + error.message);
+    console.error("❌ [App] Critical error:", error?.message ?? error, error);
+    showError("Error loading app: " + (error?.message ?? String(error)));
   }
 });
-
-console.log("✅ app.js loaded");

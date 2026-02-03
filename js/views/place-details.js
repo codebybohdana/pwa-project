@@ -3,8 +3,6 @@
  */
 
 async function initDetailsPage() {
-  console.log("📖 Initializing details page...");
-
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const placeId = urlParams.get("id");
@@ -16,8 +14,8 @@ async function initDetailsPage() {
     await loadPlaceDetails(parseInt(placeId));
     setupDetailsButtons(parseInt(placeId));
   } catch (error) {
-    console.error("❌ Error:", error);
-    showError("Failed to load: " + error.message);
+    console.error("❌ [initDetailsPage]", error?.message ?? error, error);
+    showError("Failed to load: " + (error?.message ?? ""));
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 2000);
@@ -40,7 +38,17 @@ function displayPlaceDetails(place) {
 
   const photo = document.getElementById("place-photo");
   if (photo) {
-    photo.src = place.photo || "../images/placeholder.png";
+    photo.src = "../images/placeholder.png";
+    if (place.photo) {
+      getImageUrl(place.photo).then((url) => {
+        if (url) {
+          photo.src = url;
+        }
+      }).catch((err) => {
+        console.error("❌ [displayPlaceDetails] getImageUrl failed:", err?.message ?? err);
+        photo.src = "../images/placeholder.png";
+      });
+    }
     photo.onerror = () => (photo.src = "../images/placeholder.png");
   }
 
@@ -148,15 +156,20 @@ function showDeleteModal(placeId) {
 
 async function handleDeletePlace(placeId) {
   try {
+    // Отримуємо дані місця перед видаленням, щоб видалити зображення з кешу
+    const place = await getPlaceById(placeId);
+    if (place && place.photo && place.photo.startsWith("/cached-images/")) {
+      await deleteImageFromCache(place.photo);
+    }
+    
     await deletePlace(placeId);
     showSuccess("Place deleted!");
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 1000);
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("❌ [handleDeletePlace]", placeId, error?.message ?? error, error);
     showError("Failed to delete");
   }
 }
 
-console.log("✅ place-details.js loaded");

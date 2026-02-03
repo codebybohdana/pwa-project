@@ -8,8 +8,6 @@ let newPhoto = null;
 let newCoordinates = null;
 
 async function initEditPage() {
-  console.log("✏️ Initializing edit page...");
-
   try {
     const urlParams = new URLSearchParams(window.location.search);
     currentPlaceId = urlParams.get("id");
@@ -26,9 +24,11 @@ async function initEditPage() {
     setupUpdateLocationButton();
     setupNavigationButtons();
   } catch (error) {
-    console.error("❌ Error:", error);
-    alert("Error: " + error.message);
-    window.location.href = "../index.html";
+    console.error("❌ [initEditPage]", error?.message ?? error, error);
+    showError("Error: " + (error?.message ?? ""));
+    setTimeout(() => {
+      window.location.href = "../index.html";
+    }, 2000);
   }
 }
 
@@ -43,7 +43,7 @@ async function loadPlaceForEditing(id) {
     currentPlace = place;
     fillFormWithPlaceData(place);
   } catch (error) {
-    console.error("❌ Loading error:", error);
+    console.error("❌ [loadPlaceForEditing]", id, error?.message ?? error, error);
     throw error;
   }
 }
@@ -60,7 +60,17 @@ function fillFormWithPlaceData(place) {
 
   const currentPhotoImg = document.getElementById("current-photo-img");
   if (currentPhotoImg) {
-    currentPhotoImg.src = place.photo || "../images/placeholder.png";
+    currentPhotoImg.src = "../images/placeholder.png";
+    if (place.photo) {
+      getImageUrl(place.photo).then((url) => {
+        if (url) {
+          currentPhotoImg.src = url;
+        }
+      }).catch((err) => {
+        console.error("❌ [fillFormWithPlaceData] getImageUrl failed:", err?.message ?? err);
+        currentPhotoImg.src = "../images/placeholder.png";
+      });
+    }
     currentPhotoImg.onerror = function () {
       this.src = "../images/placeholder.png";
     };
@@ -113,7 +123,6 @@ function setupEditForm() {
 
 async function handleEditFormSubmit() {
   try {
-    console.log("💾 Saving changes...");
     showLoading(true);
 
     const name = document.getElementById("place-name").value.trim();
@@ -131,8 +140,13 @@ async function handleEditFormSubmit() {
       notes: notes || "",
     };
 
+    // Обробляємо нове зображення через Cache API
     if (newPhoto) {
-      updatedPlace.photo = newPhoto;
+      updatedPlace.photo = await processImageForSave(newPhoto);
+      // Видаляємо старе зображення з кешу, якщо воно було в Cache API
+      if (currentPlace.photo && currentPlace.photo.startsWith("/cached-images/")) {
+        await deleteImageFromCache(currentPlace.photo);
+      }
     }
 
     if (newCoordinates) {
@@ -143,11 +157,13 @@ async function handleEditFormSubmit() {
 
     await updatePlace(currentPlaceId, updatedPlace);
 
-    alert("✅ Changes saved successfully!");
-    window.location.href = `place-details.html?id=${currentPlaceId}`;
+    showSuccess("Changes saved successfully!");
+    setTimeout(() => {
+      window.location.href = `place-details.html?id=${currentPlaceId}`;
+    }, 1000);
   } catch (error) {
-    console.error("❌ Error:", error);
-    alert("❌ " + error.message);
+    console.error("❌ [handleEditFormSubmit]", error?.message ?? error, error);
+    showError(error?.message ?? "Save failed");
   } finally {
     showLoading(false);
   }
@@ -184,8 +200,8 @@ function setupChangePhotoButton() {
 
       btn.textContent = "✅ New photo ready";
     } catch (error) {
-      console.error("❌ Error:", error);
-      alert("❌ " + error.message);
+      console.error("❌ [change-photo]", error?.message ?? error, error);
+      showError(error?.message ?? "Camera failed");
       btn.textContent = "📸 Try again";
     } finally {
       btn.disabled = false;
@@ -242,8 +258,8 @@ function setupChooseNewPhotoButton() {
 
       btn.textContent = "✅ Photo selected";
     } catch (error) {
-      console.error("❌ Error:", error);
-      alert("❌ " + error.message);
+      console.error("❌ [choose-new-photo]", error?.message ?? error, error);
+      showError(error?.message ?? "Photo load failed");
       btn.textContent = "🖼️ Try again";
     } finally {
       btn.disabled = false;
@@ -282,8 +298,8 @@ function setupUpdateLocationButton() {
 
       btn.textContent = "✅ New location obtained";
     } catch (error) {
-      console.error("❌ Error:", error);
-      alert("❌ " + error.message);
+      console.error("❌ [update-location]", error?.message ?? error, error);
+      showError(error?.message ?? "Location failed");
       btn.textContent = "📍 Try again";
     } finally {
       btn.disabled = false;
@@ -303,4 +319,3 @@ function setupNavigationButtons() {
   }
 }
 
-console.log("✅ edit-place.js loaded");

@@ -23,7 +23,7 @@
     <!-- Main Content -->
     <main class="main">
       <div class="container">
-        <form id="edit-place-form" class="form">
+        <form id="edit-place-form" class="form" aria-label="Edit place form">
           <!-- Place Name -->
           <div class="form-group">
             <label for="place-name" class="form-label">
@@ -37,6 +37,7 @@
               required
               minlength="3"
               maxlength="100"
+              aria-required="true"
             />
           </div>
 
@@ -53,6 +54,7 @@
               required
               minlength="5"
               maxlength="200"
+              aria-required="true"
             />
           </div>
 
@@ -93,6 +95,7 @@
                 id="change-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
+                aria-label="Take a new photo using camera"
               >
                 📸 Take New Photo
               </button>
@@ -102,6 +105,7 @@
                 id="choose-new-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
+                aria-label="Choose new photo from gallery"
               >
                 🖼️ Choose from Gallery
               </button>
@@ -115,11 +119,12 @@
             />
 
             <div id="new-photo-preview" class="photo-preview hidden">
-              <img id="new-photo-img" src="" alt="New photo" />
+              <img id="new-photo-img" src="" alt="New photo" loading="lazy" />
               <button
                 type="button"
                 id="remove-new-photo-btn"
                 class="button-remove-photo"
+                aria-label="Remove new photo"
               >
                 ✕
               </button>
@@ -134,7 +139,7 @@
                 📍 <span id="current-coordinates-value"></span>
               </p>
 
-              
+              <a
                 id="current-location-maps-btn"
                 href="#"
                 target="_blank"
@@ -158,6 +163,7 @@
               type="button"
               id="update-location-btn"
               class="button button-secondary"
+              aria-label="Get new location using GPS"
             >
               📍 Get New Location
             </button>
@@ -166,7 +172,7 @@
               <p class="coordinates-text">
                 📍 New: <span id="new-coordinates-value"></span>
               </p>
-              
+              <a
                 id="preview-new-location"
                 href="#"
                 target="_blank"
@@ -204,6 +210,7 @@
 
     <!-- JavaScript -->
     <script src="../js/db.js"></script>
+    <script src="../js/image-cache.js"></script>
     <script src="../js/camera.js"></script>
     <script src="../js/geolocation.js"></script>
     <script src="../js/utils.js"></script>

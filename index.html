@@ -17,15 +17,15 @@
     <header class="header">
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
-        <div id="online-status" class="online-status">
-          <span class="status-dot status-online"></span>
+        <div id="online-status" class="online-status" role="status" aria-live="polite">
+          <span class="status-dot status-online" aria-hidden="true"></span>
           <span class="status-text">Online</span>
         </div>
       </div>
     </header>
 
     <!-- Offline Banner -->
-    <div id="offline-banner" class="offline-banner hidden">
+    <div id="offline-banner" class="offline-banner hidden" role="alert" aria-live="assertive">
       <div class="container">
         <p>⚠️ You're offline. App is running in limited mode.</p>
       </div>
@@ -37,12 +37,14 @@
         <!-- Search Bar -->
         <div class="search-section">
           <div class="search-bar">
+            <label for="search-input" class="sr-only">Search places</label>
             <input
               type="text"
               id="search-input"
               class="search-input"
               placeholder="🔍 Search places..."
               autocomplete="off"
+              aria-label="Search places"
             />
           </div>
         </div>
@@ -55,7 +57,7 @@
         </div>
 
         <!-- Places List -->
-        <div id="places-list" class="places-grid"></div>
+        <div id="places-list" class="places-grid" role="list" aria-label="List of saved places"></div>
 
         <!-- Empty State -->
         <div id="empty-state" class="empty-state hidden">
@@ -80,6 +82,7 @@
 
     <!-- JavaScript -->
     <script src="js/db.js"></script>
+    <script src="js/image-cache.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/views/index.js"></script>
     <script src="js/app.js"></script>

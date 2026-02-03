@@ -31,6 +31,7 @@
               src="../images/placeholder.png"
               alt="Place photo"
               class="place-photo"
+              loading="lazy"
             />
           </div>
 
@@ -78,10 +79,10 @@
 
           <!-- Actions -->
           <div class="place-details-actions">
-            <button id="edit-btn" class="button button-secondary button-full">
+            <button id="edit-btn" class="button button-secondary button-full" aria-label="Edit this place">
               ✏️ Edit
             </button>
-            <button id="delete-btn" class="button button-danger button-full">
+            <button id="delete-btn" class="button button-danger button-full" aria-label="Delete this place">
               🗑️ Delete
             </button>
           </div>
@@ -96,10 +97,10 @@
         <h3>Delete place?</h3>
         <p>This action cannot be undone.</p>
         <div class="modal-actions">
-          <button id="confirm-delete-btn" class="button button-danger">
+          <button id="confirm-delete-btn" class="button button-danger" aria-label="Confirm deletion">
             Yes, delete
           </button>
-          <button id="cancel-delete-btn" class="button button-outline">
+          <button id="cancel-delete-btn" class="button button-outline" aria-label="Cancel deletion">
             Cancel
           </button>
         </div>
@@ -108,6 +109,7 @@
 
     <!-- JavaScript -->
     <script src="../js/db.js"></script>
+    <script src="../js/image-cache.js"></script>
     <script src="../js/geolocation.js"></script>
     <script src="../js/utils.js"></script>
     <script src="../js/views/place-details.js"></script>

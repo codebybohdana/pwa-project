@@ -8,8 +8,6 @@ function isGeolocationAvailable() {
 
 async function getCurrentPosition() {
   return new Promise((resolve, reject) => {
-    console.log("📍 Getting location...");
-
     if (!isGeolocationAvailable()) {
       reject(new Error("Geolocation not supported"));
       return;
@@ -28,11 +26,10 @@ async function getCurrentPosition() {
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
         };
-        console.log("✅ Location obtained");
         resolve(coords);
       },
       (error) => {
-        console.error("❌ Geolocation error:", error);
+        console.error("❌ [getCurrentPosition]", error?.code, error?.message ?? error, error);
 
         if (error.code === error.PERMISSION_DENIED) {
           reject(
@@ -59,4 +56,3 @@ function formatCoordinates(lat, lng) {
   return `${formattedLat}° ${latDir}, ${formattedLng}° ${lngDir}`;
 }
 
-console.log("✅ geolocation.js loaded");

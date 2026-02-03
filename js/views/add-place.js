@@ -6,15 +6,13 @@ let currentPhoto = null;
 let currentCoordinates = null;
 
 async function initAddPlacePage() {
-  console.log("📝 Initializing add place page...");
-
   try {
     setupAddPlaceForm();
     setupLocationButton();
     setupCameraButton();
     setupChoosePhotoButton();
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("❌ [initAddPlacePage]", error?.message ?? error, error);
     showError("Failed to load form");
   }
 }
@@ -31,7 +29,6 @@ function setupAddPlaceForm() {
 
 async function handleFormSubmit() {
   try {
-    console.log("💾 Saving...");
     showLoading(true);
 
     const name = document.getElementById("place-name").value.trim();
@@ -42,25 +39,29 @@ async function handleFormSubmit() {
       throw new Error("Please fill in required fields");
     }
 
+    // Обробляємо зображення через Cache API
+    let photoUrl = "";
+    if (currentPhoto) {
+      photoUrl = await processImageForSave(currentPhoto);
+    }
+
     const placeData = {
       name,
       address,
       notes: notes || "",
-      photo: currentPhoto || "",
+      photo: photoUrl,
       coordinates: currentCoordinates || null,
       timestamp: Date.now(),
     };
 
-    const id = await addPlace(placeData);
-    console.log("✅ Saved with ID:", id);
-
+    await addPlace(placeData);
     showSuccess("Place saved successfully!");
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 1000);
   } catch (error) {
-    console.error("❌ Error:", error);
-    showError(error.message || "Failed to save");
+    console.error("❌ [handleFormSubmit]", error?.message ?? error, error);
+    showError(error?.message || "Failed to save");
   } finally {
     showLoading(false);
   }
@@ -96,8 +97,8 @@ function setupLocationButton() {
       btn.textContent = "✅ Location obtained";
       btn.classList.add("button-success");
     } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
+      console.error("❌ [get-location]", error?.message ?? error, error);
+      showError(error?.message ?? "Location failed");
       btn.textContent = "📍 Try again";
     } finally {
       btn.disabled = false;
@@ -122,8 +123,8 @@ function setupCameraButton() {
       btn.textContent = "✅ Photo taken";
       btn.classList.add("button-success");
     } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
+      console.error("❌ [take-photo]", error?.message ?? error, error);
+      showError(error?.message ?? "Camera failed");
       btn.textContent = "📸 Try again";
     } finally {
       btn.disabled = false;
@@ -166,8 +167,8 @@ function setupChoosePhotoButton() {
       btn.textContent = "✅ Photo selected";
       btn.classList.add("button-success");
     } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
+      console.error("❌ [choose-photo]", error?.message ?? error, error);
+      showError(error?.message ?? "Photo load failed");
       btn.textContent = "🖼️ Try again";
     } finally {
       btn.disabled = false;
@@ -206,4 +207,3 @@ function showPhotoPreview(photoData) {
   }
 }
 
-console.log("✅ add-place.js loaded");

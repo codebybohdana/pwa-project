@@ -10,25 +10,20 @@ let db = null;
 
 async function initDB() {
   return new Promise((resolve, reject) => {
-    console.log("🔄 Initializing database...");
-
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      console.error("❌ Database error:", request.error);
+      console.error("❌ [initDB] Database open failed:", request.error);
       reject(request.error);
     };
 
     request.onsuccess = () => {
       db = request.result;
-      console.log("✅ Database opened");
       resolve(db);
     };
 
     request.onupgradeneeded = (event) => {
-      console.log("🔧 Creating database...");
       const database = event.target.result;
-
       if (!database.objectStoreNames.contains(STORE_NAME)) {
         const objectStore = database.createObjectStore(STORE_NAME, {
           keyPath: "id",
@@ -36,7 +31,6 @@ async function initDB() {
         });
         objectStore.createIndex("name", "name", { unique: false });
         objectStore.createIndex("timestamp", "timestamp", { unique: false });
-        console.log("✅ Object store created");
       }
     };
   });
@@ -52,13 +46,10 @@ async function addPlace(placeData) {
     const objectStore = transaction.objectStore(STORE_NAME);
     const request = objectStore.add(placeData);
 
-    request.onsuccess = () => {
-      console.log("✅ Place added:", request.result);
-      resolve(request.result);
-    };
+    request.onsuccess = () => resolve(request.result);
 
     request.onerror = () => {
-      console.error("❌ Error:", request.error);
+      console.error("❌ [addPlace] IndexedDB error:", request.error);
       reject(request.error);
     };
   });
@@ -73,12 +64,11 @@ async function getAllPlaces() {
     request.onsuccess = () => {
       const places = request.result;
       places.sort((a, b) => b.timestamp - a.timestamp);
-      console.log(`✅ Found ${places.length} places`);
       resolve(places);
     };
 
     request.onerror = () => {
-      console.error("❌ Error:", request.error);
+      console.error("❌ [getAllPlaces] IndexedDB error:", request.error);
       reject(request.error);
     };
   });
@@ -95,7 +85,7 @@ async function getPlaceById(id) {
     };
 
     request.onerror = () => {
-      console.error("❌ Error:", request.error);
+      console.error("❌ [getPlaceById] IndexedDB error:", request.error);
       reject(request.error);
     };
   });
@@ -108,13 +98,10 @@ async function updatePlace(id, placeData) {
     const objectStore = transaction.objectStore(STORE_NAME);
     const request = objectStore.put(placeData);
 
-    request.onsuccess = () => {
-      console.log("✅ Place updated");
-      resolve();
-    };
+    request.onsuccess = () => resolve();
 
     request.onerror = () => {
-      console.error("❌ Error:", request.error);
+      console.error("❌ [updatePlace] IndexedDB error:", request.error);
       reject(request.error);
     };
   });
@@ -126,13 +113,10 @@ async function deletePlace(id) {
     const objectStore = transaction.objectStore(STORE_NAME);
     const request = objectStore.delete(Number(id));
 
-    request.onsuccess = () => {
-      console.log("✅ Place deleted");
-      resolve();
-    };
+    request.onsuccess = () => resolve();
 
     request.onerror = () => {
-      console.error("❌ Error:", request.error);
+      console.error("❌ [deletePlace] IndexedDB error:", request.error);
       reject(request.error);
     };
   });
@@ -156,9 +140,8 @@ async function searchPlaces(query) {
 
     return filtered;
   } catch (error) {
-    console.error("❌ Search error:", error);
+    console.error("❌ [searchPlaces] Error:", error?.message ?? error, error);
     throw error;
   }
 }
 
-console.log("✅ db.js loaded");

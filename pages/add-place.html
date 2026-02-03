@@ -23,7 +23,7 @@
     <!-- Main Content -->
     <main class="main">
       <div class="container">
-        <form id="add-place-form" class="form">
+        <form id="add-place-form" class="form" aria-label="Add new place form">
           <!-- Place Name -->
           <div class="form-group">
             <label for="place-name" class="form-label">
@@ -37,7 +37,10 @@
               required
               minlength="3"
               maxlength="100"
+              aria-required="true"
+              aria-describedby="place-name-hint"
             />
+            <span id="place-name-hint" class="sr-only">Required field, minimum 3 characters</span>
           </div>
 
           <!-- Address -->
@@ -53,7 +56,10 @@
               required
               minlength="5"
               maxlength="200"
+              aria-required="true"
+              aria-describedby="place-address-hint"
             />
+            <span id="place-address-hint" class="sr-only">Required field, minimum 5 characters</span>
           </div>
 
           <!-- Notes -->
@@ -67,8 +73,9 @@
               placeholder="Add your notes about this place..."
               rows="4"
               maxlength="500"
+              aria-describedby="place-notes-hint"
             ></textarea>
-            <span class="form-hint">Maximum 500 characters</span>
+            <span id="place-notes-hint" class="form-hint">Maximum 500 characters</span>
           </div>
 
           <!-- Geolocation -->
@@ -78,6 +85,7 @@
               type="button"
               id="get-location-btn"
               class="button button-secondary"
+              aria-label="Get current location using GPS"
             >
               📍 Get My Location
             </button>
@@ -86,7 +94,7 @@
               <p class="coordinates-text">
                 📍 <span id="coordinates-value"></span>
               </p>
-              
+              <a
                 id="preview-on-map"
                 href="#"
                 target="_blank"
@@ -113,6 +121,7 @@
                 id="take-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
+                aria-label="Take a photo using camera"
               >
                 📸 Take Photo
               </button>
@@ -122,6 +131,7 @@
                 id="choose-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
+                aria-label="Choose photo from gallery"
               >
                 🖼️ Choose from Gallery
               </button>
@@ -135,11 +145,12 @@
             />
 
             <div id="photo-preview" class="photo-preview hidden">
-              <img id="photo-preview-img" src="" alt="Preview" />
+              <img id="photo-preview-img" src="" alt="Preview" loading="lazy" />
               <button
                 type="button"
                 id="remove-photo-btn"
                 class="button-remove-photo"
+                aria-label="Remove photo"
               >
                 ✕
               </button>
@@ -167,6 +178,7 @@
 
     <!-- JavaScript -->
     <script src="../js/db.js"></script>
+    <script src="../js/image-cache.js"></script>
     <script src="../js/camera.js"></script>
     <script src="../js/geolocation.js"></script>
     <script src="../js/utils.js"></script>
