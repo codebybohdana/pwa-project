@@ -8,41 +8,32 @@
       name="description"
       content="Save your favorite city places and use them offline"
     />
-
     <title>City Assistant - PWA</title>
 
-    <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.webmanifest" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="images/icons/icon-192.png" />
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" type="image/png" href="./images/icons/icon-192.png" />
+    <link rel="stylesheet" href="./css/styles.css" />
   </head>
-  <body>
-    <!-- Header -->
+  <body data-page="index">
     <header class="header">
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
+
         <div id="online-status" class="online-status">
-          <span class="status-dot"></span>
+          <span class="status-dot status-online"></span>
           <span class="status-text">Online</span>
         </div>
       </div>
     </header>
 
-    <!-- Offline Banner -->
     <div id="offline-banner" class="offline-banner hidden">
       <div class="container">
         <p>⚠️ You're offline. App is running in limited mode.</p>
       </div>
     </div>
 
-    <!-- Main Content -->
     <main class="main">
       <div class="container">
-        <!-- Search Bar -->
         <div class="search-section">
           <div class="search-bar">
             <input
@@ -55,41 +46,36 @@
           </div>
         </div>
 
-        <!-- Add Place Button -->
         <div class="actions">
-          <a href="pages/add-place.html" class="button button-primary">
-            ➕ Add Place
-          </a>
+          <a href="./pages/add-place.html" class="button button-primary"
+            >➕ Add Place</a
+          >
         </div>
 
-        <!-- Places List -->
         <div id="places-list" class="places-grid"></div>
 
-        <!-- Empty State -->
         <div id="empty-state" class="empty-state hidden">
           <div class="empty-state-content">
             <div class="empty-state-icon">📍</div>
             <h2>No saved places</h2>
             <p>Add your first favorite place to get started!</p>
-            <a href="pages/add-place.html" class="button button-primary">
-              Add First Place
-            </a>
+            <a href="./pages/add-place.html" class="button button-primary"
+              >Add First Place</a
+            >
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>© 2026 City Assistant | PWA Project</p>
       </div>
     </footer>
 
-    <!-- JavaScript -->
-    <script src="js/db.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/pages/index.js"></script>
-    <script src="js/app.js"></script>
+    <script src="./js/db.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/pages/index.js"></script>
+    <script src="./js/app.js"></script>
   </body>
 </html>

@@ -1,132 +1,64 @@
-/**
- * ========================================
- * INDEX PAGE - Головна сторінка
- * ========================================
- */
-
-/**
- * Ініціалізація головної сторінки
- */
 async function initIndexPage() {
-  console.log("📱 Ініціалізація головної сторінки...");
-
-  try {
-    await loadAndDisplayPlaces();
-    setupSearch();
-  } catch (error) {
-    console.error("❌ Помилка:", error);
-    showError("Не вдалося завантажити місця");
-  }
+  await loadAndRender();
+  setupSearch();
 }
 
-/**
- * Завантажити і відобразити всі місця
- */
-async function loadAndDisplayPlaces() {
-  try {
-    console.log("📍 Завантаження місць...");
-    const places = await getAllPlaces();
-    displayPlaces(places);
-  } catch (error) {
-    console.error("❌ Помилка завантаження:", error);
-    throw error;
-  }
+async function loadAndRender() {
+  const places = await getAllPlaces();
+  renderPlaces(places);
 }
 
-/**
- * Відобразити місця на сторінці
- */
-function displayPlaces(places) {
-  const placesList = document.getElementById("places-list");
-  const emptyState = document.getElementById("empty-state");
+function renderPlaces(places) {
+  const list = $("places-list");
+  const empty = $("empty-state");
 
-  if (!placesList) return;
+  if (!list) return;
 
-  placesList.innerHTML = "";
+  list.innerHTML = "";
 
-  if (places.length === 0) {
-    placesList.classList.add("hidden");
-    if (emptyState) emptyState.classList.remove("hidden");
+  if (!places.length) {
+    list.classList.add("hidden");
+    empty && empty.classList.remove("hidden");
     return;
   }
 
-  placesList.classList.remove("hidden");
-  if (emptyState) emptyState.classList.add("hidden");
+  list.classList.remove("hidden");
+  empty && empty.classList.add("hidden");
 
-  places.forEach((place) => {
-    const card = createPlaceCard(place);
-    placesList.appendChild(card);
-  });
+  for (const p of places) {
+    const card = document.createElement("div");
+    card.className = "place-card";
+    card.onclick = () =>
+      (window.location.href = `./pages/place-details.html?id=${p.id}`);
 
-  console.log(`✅ Відображено місць: ${places.length}`);
-}
+    const photo = p.photo ? p.photo : "./images/placeholder.png";
+    const dateStr = p.timestamp ? new Date(p.timestamp).toLocaleString() : "";
 
-/**
- * Створити картку місця
- */
-function createPlaceCard(place) {
-  const card = document.createElement("div");
-  card.className = "place-card";
-  card.onclick = () => goToPlaceDetails(place.id);
-
-  const photoSrc = place.photo || "images/placeholder.png";
-
-  let dateStr = "Дата не вказана";
-  if (place.timestamp) {
-    try {
-      dateStr = new Date(place.timestamp).toLocaleDateString("uk-UA", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-    } catch (error) {
-      dateStr = new Date(place.timestamp).toLocaleDateString();
-    }
-  }
-
-  card.innerHTML = `
-      <img src="${photoSrc}" alt="${escapeHtml(
-    place.name
-  )}" class="place-card-image" onerror="this.src='images/placeholder.png'">
+    card.innerHTML = `
+      <img class="place-card-image" src="${photo}" alt="${escapeHtml(
+      p.name
+    )}" onerror="this.src='./images/placeholder.png'">
       <div class="place-card-content">
-        <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
-        <p class="place-card-address">${escapeHtml(place.address)}</p>
-        <p class="place-card-meta">📅 ${dateStr}</p>
+        <div class="place-card-title">${escapeHtml(p.name)}</div>
+        <div class="place-card-address">${escapeHtml(p.address)}</div>
+        <div class="place-card-meta">📅 ${escapeHtml(dateStr)}</div>
       </div>
     `;
-
-  return card;
+    list.appendChild(card);
+  }
 }
 
-/**
- * Перейти на сторінку деталей
- */
-function goToPlaceDetails(id) {
-  window.location.href = `pages/place-details.html?id=${id}`;
-}
-
-/**
- * Налаштувати пошук
- */
 function setupSearch() {
-  const searchInput = document.getElementById("search-input");
-  if (!searchInput) return;
+  const input = $("search-input");
+  if (!input) return;
 
-  let searchTimeout;
-  searchInput.addEventListener("input", (e) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(async () => {
-      const query = e.target.value;
-      console.log("🔍 Пошук:", query);
-
-      try {
-        const results = await searchPlaces(query);
-        displayPlaces(results);
-      } catch (error) {
-        console.error("❌ Помилка пошуку:", error);
-      }
-    }, 300);
+  let t = null;
+  input.addEventListener("input", () => {
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      const q = input.value;
+      const results = await searchPlaces(q);
+      renderPlaces(results);
+    }, 250);
   });
 }
-
-console.log("✅ index.js завантажено");

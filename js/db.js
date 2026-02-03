@@ -1,215 +1,100 @@
-/**
- * ========================================
- * DATABASE MODULE (IndexedDB)
- * ========================================
- * Local database for storing places offline
- */
-
-// Database configuration
 const DB_NAME = "CityAssistantDB";
 const DB_VERSION = 1;
-const STORE_NAME = "places";
+const STORE = "places";
 
 let db = null;
 
-/**
- * Initialize database
- */
-async function initDB() {
+function initDB() {
+  if (db) return Promise.resolve(db);
+
   return new Promise((resolve, reject) => {
-    console.log("🔄 Initializing database...");
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
 
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onerror = () => reject(req.error);
 
-    request.onerror = () => {
-      console.error("❌ Database error:", request.error);
-      reject(request.error);
-    };
-
-    request.onsuccess = () => {
-      db = request.result;
-      console.log("✅ Database opened successfully");
-      resolve(db);
-    };
-
-    request.onupgradeneeded = (event) => {
-      console.log("🔧 Creating database structure...");
-
-      const database = event.target.result;
-
-      if (!database.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = database.createObjectStore(STORE_NAME, {
+    req.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      if (!database.objectStoreNames.contains(STORE)) {
+        const store = database.createObjectStore(STORE, {
           keyPath: "id",
           autoIncrement: true,
         });
-
-        objectStore.createIndex("name", "name", { unique: false });
-        objectStore.createIndex("timestamp", "timestamp", { unique: false });
-
-        console.log("✅ Object store created");
-      }
-    };
-  });
-}
-
-/**
- * Add new place
- */
-async function addPlace(placeData) {
-  return new Promise((resolve, reject) => {
-    console.log("📝 Adding place:", placeData.name);
-
-    if (!placeData.timestamp) {
-      placeData.timestamp = Date.now();
-    }
-
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.add(placeData);
-
-    request.onsuccess = () => {
-      console.log("✅ Place added with ID:", request.result);
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      console.error("❌ Error adding place:", request.error);
-      reject(request.error);
-    };
-  });
-}
-
-/**
- * Get all places
- */
-async function getAllPlaces() {
-  return new Promise((resolve, reject) => {
-    console.log("📖 Getting all places...");
-
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.getAll();
-
-    request.onsuccess = () => {
-      const places = request.result;
-      places.sort((a, b) => b.timestamp - a.timestamp);
-      console.log(`✅ Found ${places.length} places`);
-      resolve(places);
-    };
-
-    request.onerror = () => {
-      console.error("❌ Error getting places:", request.error);
-      reject(request.error);
-    };
-  });
-}
-
-/**
- * Get place by ID
- */
-async function getPlaceById(id) {
-  return new Promise((resolve, reject) => {
-    console.log("🔍 Getting place with ID:", id);
-
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.get(Number(id));
-
-    request.onsuccess = () => {
-      if (request.result) {
-        console.log("✅ Place found:", request.result.name);
-        resolve(request.result);
-      } else {
-        console.log("⚠️ Place not found");
-        resolve(null);
+        store.createIndex("name", "name", { unique: false });
+        store.createIndex("timestamp", "timestamp", { unique: false });
       }
     };
 
-    request.onerror = () => {
-      console.error("❌ Error getting place:", request.error);
-      reject(request.error);
+    req.onsuccess = () => {
+      db = req.result;
+      resolve(db);
     };
   });
 }
 
-/**
- * Update place
- */
-async function updatePlace(id, placeData) {
+function addPlace(place) {
   return new Promise((resolve, reject) => {
-    console.log("✏️ Updating place with ID:", id);
-
-    placeData.id = Number(id);
-
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.put(placeData);
-
-    request.onsuccess = () => {
-      console.log("✅ Place updated");
-      resolve();
-    };
-
-    request.onerror = () => {
-      console.error("❌ Error updating place:", request.error);
-      reject(request.error);
-    };
+    const tx = db.transaction([STORE], "readwrite");
+    const store = tx.objectStore(STORE);
+    const req = store.add(place);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
 }
 
-/**
- * Delete place
- */
-async function deletePlace(id) {
+function getAllPlaces() {
   return new Promise((resolve, reject) => {
-    console.log("🗑️ Deleting place with ID:", id);
-
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const objectStore = transaction.objectStore(STORE_NAME);
-    const request = objectStore.delete(Number(id));
-
-    request.onsuccess = () => {
-      console.log("✅ Place deleted");
-      resolve();
+    const tx = db.transaction([STORE], "readonly");
+    const store = tx.objectStore(STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const data = req.result || [];
+      data.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      resolve(data);
     };
-
-    request.onerror = () => {
-      console.error("❌ Error deleting place:", request.error);
-      reject(request.error);
-    };
+    req.onerror = () => reject(req.error);
   });
 }
 
-/**
- * Search places
- */
+function getPlaceById(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE], "readonly");
+    const store = tx.objectStore(STORE);
+    const req = store.get(Number(id));
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function updatePlace(id, place) {
+  return new Promise((resolve, reject) => {
+    place.id = Number(id);
+    const tx = db.transaction([STORE], "readwrite");
+    const store = tx.objectStore(STORE);
+    const req = store.put(place);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function deletePlace(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE], "readwrite");
+    const store = tx.objectStore(STORE);
+    const req = store.delete(Number(id));
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
 async function searchPlaces(query) {
-  try {
-    console.log("🔍 Searching places:", query);
+  const all = await getAllPlaces();
+  if (!query || !query.trim()) return all;
 
-    const allPlaces = await getAllPlaces();
-
-    if (!query || query.trim() === "") {
-      return allPlaces;
-    }
-
-    const searchTerm = query.toLowerCase().trim();
-
-    const filtered = allPlaces.filter((place) => {
-      const nameMatch = place.name.toLowerCase().includes(searchTerm);
-      const addressMatch = place.address.toLowerCase().includes(searchTerm);
-      const notesMatch =
-        place.notes && place.notes.toLowerCase().includes(searchTerm);
-
-      return nameMatch || addressMatch || notesMatch;
-    });
-
-    console.log(`✅ Found ${filtered.length} results`);
-    return filtered;
-  } catch (error) {
-    console.error("❌ Search error:", error);
-    throw error;
-  }
+  const q = query.toLowerCase().trim();
+  return all.filter((p) => {
+    const a = (p.address || "").toLowerCase();
+    const n = (p.name || "").toLowerCase();
+    const notes = (p.notes || "").toLowerCase();
+    return n.includes(q) || a.includes(q) || notes.includes(q);
+  });
 }
-
-console.log("✅ db.js loaded");

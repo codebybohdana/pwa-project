@@ -4,111 +4,90 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-
     <title>Place Details - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
-  <body>
-    <!-- Header -->
+
+  <body data-page="details">
     <header class="header">
       <div class="container header-content">
         <a href="../index.html" class="back-button">← Back</a>
         <h1 class="header-title" id="place-name-header">Place Details</h1>
+
+        <div id="online-status" class="online-status">
+          <span class="status-dot status-online"></span>
+          <span class="status-text">Online</span>
+        </div>
       </div>
     </header>
 
-    <!-- Main Content -->
+    <div id="offline-banner" class="offline-banner hidden">
+      <div class="container">
+        <p>⚠️ You're offline. App is running in limited mode.</p>
+      </div>
+    </div>
+
     <main class="main">
       <div class="container">
         <article class="place-details">
-          <!-- Photo -->
           <div class="place-details-photo">
-            <img
-              id="place-photo"
-              src="../images/placeholder.png"
-              alt="Place photo"
-              class="place-photo"
-            />
+            <img id="place-photo" src="../images/placeholder.png" class="place-photo" alt="Place photo"/>
           </div>
 
-          <!-- Information -->
           <div class="place-details-info">
-            <!-- Name -->
             <h2 id="place-name" class="place-name">Loading...</h2>
 
-            <!-- Address -->
             <div class="info-section">
               <h3 class="info-label">📍 Address</h3>
               <p id="place-address" class="info-text">—</p>
             </div>
 
-            <!-- Notes -->
             <div class="info-section" id="notes-section">
               <h3 class="info-label">📝 Notes</h3>
               <p id="place-notes" class="info-text">—</p>
             </div>
 
-            <!-- Coordinates and map -->
             <div class="info-section" id="coordinates-section">
               <h3 class="info-label">🗺️ Location</h3>
-
               <p id="place-coordinates" class="info-text coordinates-text">—</p>
 
-              <!-- ✅ FIXED -->
-              <a
-                id="open-maps-btn"
-                href="#"
-                target="_blank"
-                class="button button-secondary"
-                style="margin-top: 12px; display: none"
-              >
+              <!-- ✅ Proper anchor -->
+              <a id="open-maps-btn" class="button button-secondary mt-md" target="_blank" rel="noopener" href="#" hidden>
                 📍 Open on Google Maps
               </a>
 
-              <div id="map-preview" class="map-container" style="display: none"></div>
+              <div id="map-preview" class="map-container" style="display:none;"></div>
             </div>
 
-            <!-- Date added -->
             <div class="info-section">
               <h3 class="info-label">📅 Added</h3>
               <p id="place-date" class="info-text">—</p>
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="place-details-actions">
-            <button id="edit-btn" class="button button-secondary button-full">
-              ✏️ Edit
-            </button>
-            <button id="delete-btn" class="button button-danger button-full">
-              🗑️ Delete
-            </button>
+            <button id="edit-btn" class="button button-secondary button-full">✏️ Edit</button>
+            <button id="delete-btn" class="button button-danger button-full">🗑️ Delete</button>
           </div>
         </article>
       </div>
     </main>
 
-    <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal hidden">
       <div class="modal-overlay"></div>
       <div class="modal-content">
         <h3>Delete place?</h3>
-        <p>This action cannot be undone. All data about this place will be deleted.</p>
+        <p>This action cannot be undone.</p>
         <div class="modal-actions">
-          <button id="confirm-delete-btn" class="button button-danger">
-            Yes, delete
-          </button>
-          <button id="cancel-delete-btn" class="button button-outline">
-            Cancel
-          </button>
+          <button id="confirm-delete-btn" class="button button-danger">Yes, delete</button>
+          <button id="cancel-delete-btn" class="button button-outline">Cancel</button>
         </div>
       </div>
     </div>
 
-    <!-- JavaScript -->
     <script src="../js/db.js"></script>
     <script src="../js/utils.js"></script>
     <script src="../js/geolocation.js"></script>

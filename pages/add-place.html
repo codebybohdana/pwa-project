@@ -4,172 +4,98 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-
     <title>Add Place - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
-  <body>
-    <!-- Header -->
+
+  <body data-page="add">
     <header class="header">
       <div class="container header-content">
         <a href="../index.html" class="back-button">← Back</a>
         <h1 class="header-title">Add Place</h1>
+
+        <div id="online-status" class="online-status">
+          <span class="status-dot status-online"></span>
+          <span class="status-text">Online</span>
+        </div>
       </div>
     </header>
 
-    <!-- Main Content -->
+    <div id="offline-banner" class="offline-banner hidden">
+      <div class="container">
+        <p>⚠️ You're offline. App is running in limited mode.</p>
+      </div>
+    </div>
+
     <main class="main">
       <div class="container">
         <form id="add-place-form" class="form">
-          <!-- Place Name -->
           <div class="form-group">
-            <label for="place-name" class="form-label">
-              Place Name <span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="place-name"
-              class="form-input"
-              placeholder="e.g., Opera House"
-              required
-              minlength="3"
-              maxlength="100"
-            />
+            <label class="form-label" for="place-name">Place Name <span class="required">*</span></label>
+            <input id="place-name" class="form-input" type="text" required minlength="3" maxlength="100" placeholder="e.g., Opera House"/>
           </div>
 
-          <!-- Address -->
           <div class="form-group">
-            <label for="place-address" class="form-label">
-              Address <span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="place-address"
-              class="form-input"
-              placeholder="e.g., 50 Main Street"
-              required
-              minlength="5"
-              maxlength="200"
-            />
+            <label class="form-label" for="place-address">Address <span class="required">*</span></label>
+            <input id="place-address" class="form-input" type="text" required minlength="5" maxlength="200" placeholder="e.g., 50 Main Street"/>
           </div>
 
-          <!-- Notes -->
           <div class="form-group">
-            <label for="place-notes" class="form-label">Notes (optional)</label>
-            <textarea
-              id="place-notes"
-              class="form-textarea"
-              placeholder="Add your notes about this place..."
-              rows="4"
-              maxlength="500"
-            ></textarea>
+            <label class="form-label" for="place-notes">Notes (optional)</label>
+            <textarea id="place-notes" class="form-textarea" rows="4" maxlength="500" placeholder="Add notes..."></textarea>
             <span class="form-hint">Maximum 500 characters</span>
           </div>
 
-          <!-- Geolocation -->
           <div class="form-group">
             <label class="form-label">Geolocation</label>
-            <button
-              type="button"
-              id="get-location-btn"
-              class="button button-secondary"
-            >
-              📍 Get My Location
-            </button>
+            <button type="button" id="get-location-btn" class="button button-secondary">📍 Get My Location</button>
 
             <div id="coordinates-display" class="coordinates-box hidden">
-              <p class="coordinates-text">
-                📍 <span id="coordinates-value"></span>
-              </p>
+              <p class="coordinates-text">📍 <span id="coordinates-value"></span></p>
 
-              <!-- ✅ FIXED: proper <a> tag -->
-              <a
-                id="preview-on-map"
-                href="#"
-                target="_blank"
-                class="button button-outline"
-                style="
-                  margin-top: 12px;
-                  font-size: 14px;
-                  padding: 10px 16px;
-                  display: none;
-                "
-              >
+              <!-- ✅ Proper anchor -->
+              <a id="preview-on-map" class="button button-outline mt-md" target="_blank" rel="noopener" href="#" hidden>
                 🗺️ View on Google Maps
               </a>
             </div>
           </div>
 
-          <!-- Photo -->
           <div class="form-group">
             <label class="form-label">Place Photo</label>
 
-            <div style="display: flex; gap: 12px; flex-wrap: wrap">
-              <button
-                type="button"
-                id="take-photo-btn"
-                class="button button-secondary"
-                style="flex: 1; min-width: 180px"
-              >
-                📸 Take Photo
-              </button>
-
-              <button
-                type="button"
-                id="choose-photo-btn"
-                class="button button-secondary"
-                style="flex: 1; min-width: 180px"
-              >
-                🖼️ Choose from Gallery
-              </button>
+            <div class="row-wrap">
+              <button type="button" id="take-photo-btn" class="button button-secondary">📸 Take Photo</button>
+              <button type="button" id="choose-photo-btn" class="button button-secondary">🖼️ Choose from Gallery</button>
             </div>
 
-            <input
-              type="file"
-              id="photo-file-input"
-              accept="image/*"
-              style="display: none"
-            />
+            <input type="file" id="photo-file-input" accept="image/*" style="display:none" />
 
             <div id="photo-preview" class="photo-preview hidden">
-              <img id="photo-preview-img" src="" alt="Preview" />
-              <button
-                type="button"
-                id="remove-photo-btn"
-                class="button-remove-photo"
-              >
-                ✕
-              </button>
+              <img id="photo-preview-img" src="" alt="Preview"/>
+              <button type="button" id="remove-photo-btn" class="button-remove-photo">✕</button>
             </div>
           </div>
 
-          <!-- Buttons -->
           <div class="form-actions">
-            <button type="submit" class="button button-primary button-full">
-              💾 Save Place
-            </button>
-            <a href="../index.html" class="button button-outline button-full">
-              Cancel
-            </a>
+            <button type="submit" class="button button-primary button-full">💾 Save Place</button>
+            <a href="../index.html" class="button button-outline button-full">Cancel</a>
           </div>
         </form>
       </div>
     </main>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay hidden">
       <div class="loading-spinner"></div>
       <p>Saving...</p>
     </div>
 
-    <!-- JavaScript -->
     <script src="../js/db.js"></script>
     <script src="../js/utils.js"></script>
-    <script src="../js/camera.js"></script>
     <script src="../js/geolocation.js"></script>
+    <script src="../js/camera.js"></script>
     <script src="../js/pages/addPlace.js"></script>
     <script src="../js/app.js"></script>
   </body>

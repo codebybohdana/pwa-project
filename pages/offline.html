@@ -4,169 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-
     <title>Offline - City Assistant</title>
 
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+        min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:white
       }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-          sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        color: white;
+      .offline-container{text-align:center;max-width:520px}
+      .offline-icon{font-size:90px;margin-bottom:16px}
+      .card{background:rgba(255,255,255,.12);border-radius:16px;padding:20px;margin:18px 0}
+      .button{
+        display:inline-block;padding:14px 22px;background:white;color:#667eea;
+        text-decoration:none;border-radius:12px;font-weight:700
       }
-      .offline-container {
-        text-align: center;
-        max-width: 500px;
-      }
-      .offline-icon {
-        font-size: 100px;
-        margin-bottom: 20px;
-        animation: float 3s ease-in-out infinite;
-      }
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
-      }
-      h1 {
-        font-size: 36px;
-        margin-bottom: 16px;
-        font-weight: 700;
-      }
-      p {
-        font-size: 18px;
-        line-height: 1.6;
-        margin-bottom: 24px;
-        opacity: 0.9;
-      }
-      .features {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 24px;
-        margin: 32px 0;
-        backdrop-filter: blur(10px);
-      }
-      .features h2 {
-        font-size: 20px;
-        margin-bottom: 16px;
-      }
-      .features ul {
-        list-style: none;
-        text-align: left;
-      }
-      .features li {
-        padding: 8px 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .features li::before {
-        content: "✓";
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        background: #10b981;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 24px;
-        flex-shrink: 0;
-      }
-      .button {
-        display: inline-block;
-        padding: 16px 32px;
-        background: white;
-        color: #667eea;
-        text-decoration: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 16px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-      }
-      .button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-      }
-      .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(239, 68, 68, 0.2);
-        padding: 8px 16px;
-        border-radius: 20px;
-        margin-bottom: 16px;
-      }
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        background: #ef4444;
-        border-radius: 50%;
-        animation: pulse 2s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.5;
-        }
-      }
+      ul{list-style:none;text-align:left}
+      li{padding:6px 0}
     </style>
   </head>
+
   <body>
     <div class="offline-container">
       <div class="offline-icon">📡</div>
-
-      <div class="status">
-        <span class="status-dot"></span>
-        <span>No connection</span>
-      </div>
-
-      <h1>You're Offline</h1>
-
-      <p>
-        Don't worry! Your saved places are still available. The app is working
-        in limited mode.
+      <h1>You’re Offline</h1>
+      <p style="opacity:.9;margin-top:10px">
+        Saved places are still available (IndexedDB). Some network features are limited.
       </p>
 
-      <div class="features">
-        <h2>Available offline:</h2>
+      <div class="card">
+        <h3 style="margin-bottom:10px">Available offline:</h3>
         <ul>
-          <li>View saved places</li>
-          <li>Search places</li>
-          <li>Add new places</li>
-          <li>Edit and delete</li>
-          <li>View photos and coordinates</li>
+          <li>✓ View saved places</li>
+          <li>✓ Search</li>
+          <li>✓ Open details</li>
+          <li>✓ Edit & delete</li>
         </ul>
       </div>
 
-      <!-- ✅ FIXED: relative path -->
-      <a href="./index.html" class="button"> 📍 Go to Saved Places </a>
+      <a class="button" href="../index.html">📍 Go to Saved Places</a>
 
-      <p style="margin-top: 24px; font-size: 14px; opacity: 0.7">
-        Connect to the internet for full functionality
+      <p style="opacity:.7;margin-top:16px;font-size:14px">
+        When you’re online again, you will be redirected automatically.
       </p>
     </div>
 
     <script>
-      window.addEventListener("online", () => {
-        window.location.href = "./index.html";
-      });
+      window.addEventListener("online", () => (window.location.href = "../index.html"));
     </script>
   </body>
 </html>

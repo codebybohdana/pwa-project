@@ -1,60 +1,28 @@
-/**
- * ========================================
- * ADD PLACE PAGE - Adding new places
- * ========================================
- */
-
-// Global variables for form
 let currentPhoto = null;
 let currentCoordinates = null;
 
-/**
- * Initialize add place page
- */
 async function initAddPlacePage() {
-  console.log("📝 Initializing add place page...");
-
-  try {
-    setupAddPlaceForm();
-    setupLocationButton();
-    setupCameraButton();
-    setupChoosePhotoButton();
-  } catch (error) {
-    console.error("❌ Error:", error);
-    showError("Failed to load form");
-  }
+  $("add-place-form")?.addEventListener("submit", onSubmit);
+  $("get-location-btn")?.addEventListener("click", onGetLocation);
+  $("take-photo-btn")?.addEventListener("click", onTakePhoto);
+  $("choose-photo-btn")?.addEventListener("click", () =>
+    $("photo-file-input")?.click()
+  );
+  $("photo-file-input")?.addEventListener("change", onChooseFile);
+  $("remove-photo-btn")?.addEventListener("click", removePhoto);
 }
 
-/**
- * Setup add place form
- */
-function setupAddPlaceForm() {
-  const form = document.getElementById("add-place-form");
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await handleFormSubmit();
-  });
-}
-
-/**
- * Handle form submission
- */
-async function handleFormSubmit() {
+async function onSubmit(e) {
+  e.preventDefault();
   try {
-    console.log("💾 Saving...");
-    showLoading(true);
+    showLoading(true, "Saving...");
+    const name = $("place-name").value.trim();
+    const address = $("place-address").value.trim();
+    const notes = $("place-notes").value.trim();
 
-    const name = document.getElementById("place-name").value.trim();
-    const address = document.getElementById("place-address").value.trim();
-    const notes = document.getElementById("place-notes").value.trim();
+    if (!name || !address) throw new Error("Fill required fields");
 
-    if (!name || !address) {
-      throw new Error("Please fill in required fields");
-    }
-
-    const placeData = {
+    const place = {
       name,
       address,
       notes: notes || "",
@@ -63,230 +31,121 @@ async function handleFormSubmit() {
       timestamp: Date.now(),
     };
 
-    const id = await addPlace(placeData);
-    console.log("✅ Saved with ID:", id);
-
-    showSuccess("Place saved successfully!");
-    setTimeout(() => {
-      window.location.href = "../index.html";
-    }, 1000);
-  } catch (error) {
-    console.error("❌ Error:", error);
-    showError(error.message || "Failed to save place");
+    await addPlace(place);
+    showSuccess("Place saved!");
+    window.location.href = "../index.html";
+  } catch (err) {
+    showError(err.message || "Save failed");
   } finally {
     showLoading(false);
   }
 }
 
-/**
- * Setup location button
- */
-function setupLocationButton() {
-  const btn = document.getElementById("get-location-btn");
-  if (!btn) return;
+async function onGetLocation() {
+  const btn = $("get-location-btn");
+  try {
+    btn.disabled = true;
+    btn.textContent = "⏳ Getting location...";
+    const coords = await getCurrentPosition();
+    currentCoordinates = coords;
 
-  btn.addEventListener("click", async () => {
-    try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Getting location...";
+    $("coordinates-value").textContent = formatCoordinates(
+      coords.lat,
+      coords.lng
+    );
+    $("coordinates-display").classList.remove("hidden");
 
-      const coords = await getCurrentPosition();
-      currentCoordinates = coords;
+    const link = $("preview-on-map");
+    link.href = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+    link.hidden = false;
 
-      const formatted = formatCoordinates(coords.lat, coords.lng);
-      const display = document.getElementById("coordinates-display");
-      const value = document.getElementById("coordinates-value");
-
-      if (display && value) {
-        value.textContent = formatted;
-        display.classList.remove("hidden");
-      }
-
-      const previewBtn = document.getElementById("preview-on-map");
-      if (previewBtn) {
-        previewBtn.href = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
-        previewBtn.style.display = "inline-flex";
-      }
-
-      btn.textContent = "✅ Location obtained";
-      btn.classList.add("button-success");
-
-      console.log("✅ Coordinates:", coords);
-    } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
-      btn.textContent = "📍 Try again";
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
-/**
- * Setup camera button
- */
-function setupCameraButton() {
-  const btn = document.getElementById("take-photo-btn");
-  if (!btn) return;
-
-  btn.addEventListener("click", async () => {
-    try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Opening camera...";
-
-      const photoData = await takePhoto();
-      currentPhoto = photoData;
-
-      showPhotoPreview(photoData);
-
-      btn.textContent = "✅ Photo taken";
-      btn.classList.add("button-success");
-
-      console.log("✅ Photo saved");
-    } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
-      btn.textContent = "📸 Try again";
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
-/**
- * Setup choose photo button
- */
-function setupChoosePhotoButton() {
-  const btn = document.getElementById("choose-photo-btn");
-  const fileInput = document.getElementById("photo-file-input");
-
-  if (!btn || !fileInput) return;
-
-  btn.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  fileInput.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      btn.disabled = true;
-      btn.textContent = "⏳ Loading...";
-
-      if (!file.type.startsWith("image/")) {
-        throw new Error("Please select an image file");
-      }
-
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error("File too large. Maximum 10MB");
-      }
-
-      const photoData = await fileToBase64(file);
-      const compressed = await compressPhotoIfNeeded(photoData);
-      currentPhoto = compressed;
-
-      showPhotoPreview(compressed);
-
-      btn.textContent = "✅ Photo selected";
-      btn.classList.add("button-success");
-
-      console.log("✅ Photo from gallery loaded");
-    } catch (error) {
-      console.error("❌ Error:", error);
-      showError(error.message);
-      btn.textContent = "🖼️ Try again";
-    } finally {
-      btn.disabled = false;
-      fileInput.value = "";
-    }
-  });
-}
-
-/**
- * Show photo preview
- */
-function showPhotoPreview(photoData) {
-  const preview = document.getElementById("photo-preview");
-  const img = document.getElementById("photo-preview-img");
-
-  if (preview && img) {
-    img.src = photoData;
-    preview.classList.remove("hidden");
-  }
-
-  const removeBtn = document.getElementById("remove-photo-btn");
-  const cameraBtn = document.getElementById("take-photo-btn");
-  const chooseBtn = document.getElementById("choose-photo-btn");
-
-  if (removeBtn) {
-    removeBtn.onclick = () => {
-      currentPhoto = null;
-      preview.classList.add("hidden");
-
-      if (cameraBtn) {
-        cameraBtn.textContent = "📸 Take Photo";
-        cameraBtn.classList.remove("button-success");
-      }
-      if (chooseBtn) {
-        chooseBtn.textContent = "🖼️ Choose from Gallery";
-        chooseBtn.classList.remove("button-success");
-      }
-    };
+    btn.textContent = "✅ Location obtained";
+  } catch (e) {
+    showError(e.message);
+    btn.textContent = "📍 Try again";
+  } finally {
+    btn.disabled = false;
   }
 }
 
-/**
- * Convert File to base64
- */
+async function onTakePhoto() {
+  const btn = $("take-photo-btn");
+  try {
+    btn.disabled = true;
+    btn.textContent = "⏳ Opening camera...";
+    const photo = await takePhoto();
+    currentPhoto = photo;
+    showPreview(photo);
+    btn.textContent = "✅ Photo taken";
+  } catch (e) {
+    showError(e.message);
+    btn.textContent = "📸 Try again";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function onChooseFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    if (!file.type.startsWith("image/")) throw new Error("Select image file");
+    const base64 = await fileToBase64(file);
+    currentPhoto = await compressIfNeeded(base64);
+    showPreview(currentPhoto);
+    $("choose-photo-btn").textContent = "✅ Photo selected";
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    e.target.value = "";
+  }
+}
+
+function showPreview(dataUrl) {
+  $("photo-preview-img").src = dataUrl;
+  $("photo-preview").classList.remove("hidden");
+}
+
+function removePhoto() {
+  currentPhoto = null;
+  $("photo-preview").classList.add("hidden");
+  $("take-photo-btn").textContent = "📸 Take Photo";
+  $("choose-photo-btn").textContent = "🖼️ Choose from Gallery";
+}
+
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("File read error"));
-    reader.readAsDataURL(file);
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error("File read error"));
+    r.readAsDataURL(file);
   });
 }
 
-/**
- * Compress photo if needed
- */
-async function compressPhotoIfNeeded(base64Data) {
+function compressIfNeeded(dataUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-
     img.onload = () => {
-      const maxWidth = 1920;
-      const maxHeight = 1080;
-      let width = img.width;
-      let height = img.height;
+      const maxW = 1280;
+      const maxH = 720;
 
-      if (width <= maxWidth && height <= maxHeight) {
-        resolve(base64Data);
-        return;
-      }
+      let w = img.width,
+        h = img.height;
+      if (w <= maxW && h <= maxH) return resolve(dataUrl);
 
-      const ratio = Math.min(maxWidth / width, maxHeight / height);
-      width = Math.floor(width * ratio);
-      height = Math.floor(height * ratio);
+      const ratio = Math.min(maxW / w, maxH / h);
+      w = Math.floor(w * ratio);
+      h = Math.floor(h * ratio);
 
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const compressed = canvas.toDataURL("image/jpeg", 0.8);
-      console.log(
-        `✅ Compressed: ${img.width}x${img.height} → ${width}x${height}`
-      );
-      resolve(compressed);
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL("image/jpeg", 0.82));
     };
-
     img.onerror = () => reject(new Error("Image load error"));
-    img.src = base64Data;
+    img.src = dataUrl;
   });
 }
-
-console.log("✅ addPlace.js loaded");
