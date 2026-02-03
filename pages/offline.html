@@ -7,51 +7,132 @@
     <title>Offline - City Assistant</title>
 
     <style>
-      *{margin:0;padding:0;box-sizing:border-box}
-      body{
-        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-        min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:white
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      .offline-container{text-align:center;max-width:520px}
-      .offline-icon{font-size:90px;margin-bottom:16px}
-      .card{background:rgba(255,255,255,.12);border-radius:16px;padding:20px;margin:18px 0}
-      .button{
-        display:inline-block;padding:14px 22px;background:white;color:#667eea;
-        text-decoration:none;border-radius:12px;font-weight:700
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: white;
       }
-      ul{list-style:none;text-align:left}
-      li{padding:6px 0}
+      .offline-container {
+        text-align: center;
+        max-width: 520px;
+      }
+      .offline-icon {
+        font-size: 90px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: 34px;
+        margin-bottom: 12px;
+        font-weight: 800;
+      }
+      p {
+        font-size: 17px;
+        line-height: 1.6;
+        margin-bottom: 18px;
+        opacity: 0.95;
+      }
+      .features {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 26px 0;
+      }
+      .features ul {
+        list-style: none;
+        text-align: left;
+      }
+      .features li {
+        padding: 7px 0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .features li::before {
+        content: "✓";
+        width: 22px;
+        height: 22px;
+        background: #10b981;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 26px;
+        background: white;
+        color: #4f46e5;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 700;
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239, 68, 68, 0.2);
+        padding: 8px 14px;
+        border-radius: 20px;
+        margin-bottom: 14px;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+      }
     </style>
   </head>
 
   <body>
     <div class="offline-container">
       <div class="offline-icon">📡</div>
-      <h1>You’re Offline</h1>
-      <p style="opacity:.9;margin-top:10px">
-        Saved places are still available (IndexedDB). Some network features are limited.
+
+      <div class="status">
+        <span class="status-dot"></span>
+        <span>No connection</span>
+      </div>
+
+      <h1>You're Offline</h1>
+      <p>
+        Don't worry! Your saved places are still available. The app works in
+        limited mode.
       </p>
 
-      <div class="card">
-        <h3 style="margin-bottom:10px">Available offline:</h3>
+      <div class="features">
+        <h2 style="font-size: 18px; margin-bottom: 12px">Available offline:</h2>
         <ul>
-          <li>✓ View saved places</li>
-          <li>✓ Search</li>
-          <li>✓ Open details</li>
-          <li>✓ Edit & delete</li>
+          <li>View saved places</li>
+          <li>Search places</li>
+          <li>Add/edit/delete places</li>
+          <li>View photos and coordinates</li>
         </ul>
       </div>
 
-      <a class="button" href="../index.html">📍 Go to Saved Places</a>
+      <a href="/index.html" class="button">📍 Go to Saved Places</a>
 
-      <p style="opacity:.7;margin-top:16px;font-size:14px">
-        When you’re online again, you will be redirected automatically.
+      <p style="margin-top: 18px; font-size: 13px; opacity: 0.75">
+        Connect to the internet for full functionality
       </p>
     </div>
 
     <script>
-      window.addEventListener("online", () => (window.location.href = "../index.html"));
+      window.addEventListener(
+        "online",
+        () => (window.location.href = "/index.html")
+      );
     </script>
   </body>
 </html>

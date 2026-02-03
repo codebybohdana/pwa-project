@@ -6,20 +6,25 @@
     <meta name="theme-color" content="#2563eb" />
     <meta
       name="description"
-      content="Save your favorite city places and use them offline"
+      content="Save useful city places (address, notes, photo, location) and use them offline."
     />
+
     <title>City Assistant - PWA</title>
 
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" type="image/png" href="./images/icons/icon-192.png" />
-    <link rel="stylesheet" href="./css/styles.css" />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
+
+    <link rel="stylesheet" href="/css/styles.css" />
   </head>
+
+  <!-- data-page використовується для запуску JS саме для цієї сторінки -->
   <body data-page="index">
     <header class="header">
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
 
-        <div id="online-status" class="online-status">
+        <div id="online-status" class="online-status" aria-live="polite">
           <span class="status-dot status-online"></span>
           <span class="status-text">Online</span>
         </div>
@@ -28,7 +33,7 @@
 
     <div id="offline-banner" class="offline-banner hidden">
       <div class="container">
-        <p>⚠️ You're offline. App is running in limited mode.</p>
+        <p>⚠️ You're offline. Some features may be limited.</p>
       </div>
     </div>
 
@@ -47,9 +52,9 @@
         </div>
 
         <div class="actions">
-          <a href="./pages/add-place.html" class="button button-primary"
-            >➕ Add Place</a
-          >
+          <a href="/pages/add-place.html" class="button button-primary">
+            ➕ Add Place
+          </a>
         </div>
 
         <div id="places-list" class="places-grid"></div>
@@ -59,9 +64,9 @@
             <div class="empty-state-icon">📍</div>
             <h2>No saved places</h2>
             <p>Add your first favorite place to get started!</p>
-            <a href="./pages/add-place.html" class="button button-primary"
-              >Add First Place</a
-            >
+            <a href="/pages/add-place.html" class="button button-primary">
+              Add First Place
+            </a>
           </div>
         </div>
       </div>
@@ -73,9 +78,10 @@
       </div>
     </footer>
 
-    <script src="./js/db.js"></script>
-    <script src="./js/utils.js"></script>
-    <script src="./js/pages/index.js"></script>
-    <script src="./js/app.js"></script>
+    <!-- JS: defer щоб не блокувати рендер -->
+    <script src="/js/utils.js" defer></script>
+    <script src="/js/db.js" defer></script>
+    <script src="/js/views/index.js" defer></script>
+    <script src="/js/app.js" defer></script>
   </body>
 </html>

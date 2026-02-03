@@ -1,38 +1,41 @@
-const CACHE_VERSION = "v3";
+/**
+ * service-worker.js
+ * Офлайн режим + кешування.
+ * Стратегії:
+ * - HTML: network-first (свіжі сторінки)
+ * - CSS/JS/Images: cache-first + background update
+ */
+
+const CACHE_VERSION = "v3"; // міняй при релізах
 const CACHE_NAME = `city-assistant-${CACHE_VERSION}`;
 
 const APP_ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-
-  "./css/styles.css",
-
-  "./js/app.js",
-  "./js/db.js",
-  "./js/utils.js",
-  "./js/geolocation.js",
-  "./js/camera.js",
-
-  "./js/pages/index.js",
-  "./js/pages/addPlace.js",
-  "./js/pages/placeDetails.js",
-  "./js/pages/editPlace.js",
-
-  "./pages/add-place.html",
-  "./pages/place-details.html",
-  "./pages/edit-place.html",
-  "./pages/offline.html",
-
-  "./images/placeholder.png",
-  "./images/icons/icon-72.png",
-  "./images/icons/icon-96.png",
-  "./images/icons/icon-144.png",
-  "./images/icons/icon-192.png",
-  "./images/icons/icon-384.png",
-  "./images/icons/icon-512.png",
-  "./images/icons/icon-192-maskable.png",
-  "./images/icons/icon-512-maskable.png",
+  "/",
+  "/index.html",
+  "/pages/add-place.html",
+  "/pages/edit-place.html",
+  "/pages/place-details.html",
+  "/pages/offline.html",
+  "/css/styles.css",
+  "/js/app.js",
+  "/js/utils.js",
+  "/js/db.js",
+  "/js/camera.js",
+  "/js/geolocation.js",
+  "/js/views/index.js",
+  "/js/views/add-place.js",
+  "/js/views/edit-place.js",
+  "/js/views/place-details.js",
+  "/manifest.webmanifest",
+  "/images/placeholder.png",
+  "/images/icons/icon-72.png",
+  "/images/icons/icon-96.png",
+  "/images/icons/icon-144.png",
+  "/images/icons/icon-192.png",
+  "/images/icons/icon-384.png",
+  "/images/icons/icon-512.png",
+  "/images/icons/icon-192-maskable.png",
+  "/images/icons/icon-512-maskable.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -61,53 +64,71 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
+  // тільки http/https
   if (!url.protocol.startsWith("http")) return;
 
-  event.respondWith(
-    (async () => {
-      // HTML => network-first + fallback (важливо для ?id=...)
-      if (req.destination === "document") {
-        try {
-          const fresh = await fetch(req);
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(req, fresh.clone());
-          return fresh;
-        } catch {
-          const cache = await caches.open(CACHE_NAME);
+  event.respondWith(handleRequest(req));
+});
 
-          // exact (with query)
-          let cached = await cache.match(req);
-          if (cached) return cached;
+async function handleRequest(req) {
+  const url = new URL(req.url);
 
-          // fallback without query
-          cached = await cache.match(url.pathname);
-          if (cached) return cached;
+  try {
+    // HTML: network-first
+    if (req.destination === "document" || url.pathname.endsWith(".html")) {
+      return await networkFirst(req);
+    }
 
-          // ignoreSearch
-          cached = await cache.match(req, { ignoreSearch: true });
-          if (cached) return cached;
+    // CSS/JS/Images: cache-first + background update
+    if (
+      req.destination === "style" ||
+      req.destination === "script" ||
+      req.destination === "image" ||
+      url.pathname.match(/\.(css|js|png|jpg|jpeg|webp|svg)$/)
+    ) {
+      return await cacheFirst(req);
+    }
 
-          return cache.match("./pages/offline.html");
-        }
-      }
-
-      // CSS/JS/IMG => cache-first
+    // інше: network-first
+    return await networkFirst(req);
+  } catch (e) {
+    // fallback: offline page
+    if (req.destination === "document") {
       const cache = await caches.open(CACHE_NAME);
-      const cached = await cache.match(req);
+      return cache.match("/pages/offline.html");
+    }
+    throw e;
+  }
+}
 
-      if (cached) {
-        // update in background
-        fetch(req)
-          .then((res) => {
-            if (res && res.status === 200) cache.put(req, res.clone());
-          })
-          .catch(() => {});
-        return cached;
-      }
+async function networkFirst(req) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const res = await fetch(req);
+    if (res && res.ok) cache.put(req, res.clone());
+    return res;
+  } catch {
+    const cached = await cache.match(req);
+    if (cached) return cached;
+    throw new Error("Network failed");
+  }
+}
 
-      const res = await fetch(req);
-      if (res && res.status === 200) cache.put(req, res.clone());
-      return res;
-    })()
-  );
+async function cacheFirst(req) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(req);
+  if (cached) {
+    // background update
+    fetch(req)
+      .then((res) => res && res.ok && cache.put(req, res.clone()))
+      .catch(() => {});
+    return cached;
+  }
+  const res = await fetch(req);
+  if (res && res.ok) cache.put(req, res.clone());
+  return res;
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });

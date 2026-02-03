@@ -1,11 +1,12 @@
-function isGeolocationAvailable() {
-  return !!navigator.geolocation;
-}
+/**
+ * geolocation.js
+ * Отримання координат через GPS.
+ */
 
 function getCurrentPosition() {
   return new Promise((resolve, reject) => {
-    if (!isGeolocationAvailable()) {
-      reject(new Error("Geolocation not supported on this device"));
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported on this device."));
       return;
     }
 
@@ -19,11 +20,9 @@ function getCurrentPosition() {
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
-          reject(
-            new Error(
-              "Geolocation denied. Allow location access in browser settings."
-            )
-          );
+          reject(new Error("Geolocation permission denied."));
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          reject(new Error("Position unavailable. Check GPS."));
         } else if (err.code === err.TIMEOUT) {
           reject(new Error("Geolocation timeout. Try again."));
         } else {
@@ -42,3 +41,6 @@ function formatCoordinates(lat, lng) {
     4
   )}° ${lngDir}`;
 }
+
+window.getCurrentPosition = getCurrentPosition;
+window.formatCoordinates = formatCoordinates;
