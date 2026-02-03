@@ -2,26 +2,22 @@
  * ========================================
  * SERVICE WORKER
  * ========================================
- * Забезпечує офлайн функціонал та кешування
+ * Provides offline functionality and caching
  */
 
 const CACHE_VERSION = "v1";
 const CACHE_NAME = `city-assistant-${CACHE_VERSION}`;
 
-// Файли для кешування
+// Files to cache
 const APP_ASSETS = [
   "/",
   "/index.html",
   "/pages/add-place.html",
   "/pages/place-details.html",
-  "/pages/offline.html",
   "/pages/edit-place.html",
+  "/pages/offline.html",
   "/css/styles.css",
   "/js/app.js",
-  "/js/utils.js",
-  "/js/pages/index.js",
-  "/js/pages/addPlace.js",
-  "/js/pages/placeDetails.js",
   "/js/db.js",
   "/js/camera.js",
   "/js/geolocation.js",
@@ -88,18 +84,18 @@ self.addEventListener("activate", (event) => {
 });
 
 // ========================================
-// FETCH EVENT (Стратегії кешування)
+// FETCH EVENT (Caching strategies)
 // ========================================
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ігнорувати chrome-extension та інші протоколи
+  // Ignore chrome-extension and other protocols
   if (!url.protocol.startsWith("http")) {
     return;
   }
 
-  // Ігнорувати browser-sync та hot reload
+  // Ignore browser-sync and hot reload
   if (url.hostname === "localhost" && url.port === "3001") {
     return;
   }
@@ -108,20 +104,20 @@ self.addEventListener("fetch", (event) => {
 });
 
 /**
- * Обробити fetch запит
- * @param {Request} request - HTTP запит
+ * Handle fetch request
+ * @param {Request} request - HTTP request
  * @returns {Promise<Response>}
  */
 async function handleFetch(request) {
   const url = new URL(request.url);
 
   try {
-    // Стратегія 1: HTML - Network First (завжди свіже)
+    // Strategy 1: HTML - Network First (always fresh)
     if (request.destination === "document" || url.pathname.endsWith(".html")) {
       return await networkFirst(request);
     }
 
-    // Стратегія 2: CSS/JS - Cache First (швидко)
+    // Strategy 2: CSS/JS - Cache First (fast)
     if (
       request.destination === "script" ||
       request.destination === "style" ||
@@ -131,7 +127,7 @@ async function handleFetch(request) {
       return await cacheFirst(request);
     }
 
-    // Стратегія 3: Зображення - Cache First
+    // Strategy 3: Images - Cache First
     if (
       request.destination === "image" ||
       url.pathname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)
@@ -139,12 +135,12 @@ async function handleFetch(request) {
       return await cacheFirst(request);
     }
 
-    // Стратегія 4: Інше - Network First
+    // Strategy 4: Other - Network First
     return await networkFirst(request);
   } catch (error) {
     console.error("[Service Worker] Fetch failed:", error);
 
-    // Повернути офлайн сторінку якщо це HTML
+    // Return offline page if HTML
     if (request.destination === "document") {
       const cache = await caches.open(CACHE_NAME);
       return cache.match("/pages/offline.html");
@@ -155,8 +151,8 @@ async function handleFetch(request) {
 }
 
 /**
- * Network First стратегія
- * Спробувати мережу, якщо не вийшло - взяти з кешу
+ * Network First strategy
+ * Try network, if fails - use cache
  */
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
@@ -164,7 +160,7 @@ async function networkFirst(request) {
   try {
     const networkResponse = await fetch(request);
 
-    // Кешувати тільки успішні відповіді
+    // Cache only successful responses
     if (networkResponse && networkResponse.status === 200) {
       cache.put(request, networkResponse.clone());
     }
@@ -183,15 +179,15 @@ async function networkFirst(request) {
 }
 
 /**
- * Cache First стратегія
- * Спробувати кеш, якщо немає - взяти з мережі
+ * Cache First strategy
+ * Try cache, if not found - use network
  */
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const cachedResponse = await cache.match(request);
 
   if (cachedResponse) {
-    // Оновити в фоні (stale-while-revalidate)
+    // Update in background (stale-while-revalidate)
     fetch(request)
       .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
@@ -199,13 +195,13 @@ async function cacheFirst(request) {
         }
       })
       .catch(() => {
-        // Ігнорувати помилки фонового оновлення
+        // Ignore background update errors
       });
 
     return cachedResponse;
   }
 
-  // Якщо немає в кеші - завантажити з мережі
+  // If not in cache - fetch from network
   const networkResponse = await fetch(request);
 
   if (networkResponse && networkResponse.status === 200) {
@@ -216,7 +212,7 @@ async function cacheFirst(request) {
 }
 
 // ========================================
-// MESSAGE EVENT (для оновлення)
+// MESSAGE EVENT (for updates)
 // ========================================
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {

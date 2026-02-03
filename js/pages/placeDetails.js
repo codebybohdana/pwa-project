@@ -1,28 +1,28 @@
 /**
  * ========================================
- * PLACE DETAILS PAGE - Деталі місця
+ * PLACE DETAILS PAGE - Place details
  * ========================================
  */
 
 /**
- * Ініціалізація сторінки деталей
+ * Initialize details page
  */
 async function initDetailsPage() {
-  console.log("📖 Ініціалізація деталей...");
+  console.log("📖 Initializing details page...");
 
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const placeId = urlParams.get("id");
 
     if (!placeId) {
-      throw new Error("ID не знайдено");
+      throw new Error("ID not found");
     }
 
     await loadPlaceDetails(parseInt(placeId));
     setupDetailsButtons(parseInt(placeId));
   } catch (error) {
-    console.error("❌ Помилка:", error);
-    showError("Не вдалося завантажити: " + error.message);
+    console.error("❌ Error:", error);
+    showError("Failed to load: " + error.message);
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 2000);
@@ -30,42 +30,42 @@ async function initDetailsPage() {
 }
 
 /**
- * Завантажити деталі
+ * Load place details
  */
 async function loadPlaceDetails(id) {
   const place = await getPlaceById(id);
 
   if (!place) {
-    throw new Error("Місце не знайдено");
+    throw new Error("Place not found");
   }
 
   displayPlaceDetails(place);
 }
 
 /**
- * Відобразити деталі
+ * Display place details
  */
 function displayPlaceDetails(place) {
-  // Назва в header
+  // Name in header
   const headerTitle = document.getElementById("place-name-header");
-  if (headerTitle) headerTitle.textContent = place.name || "Місце";
+  if (headerTitle) headerTitle.textContent = place.name || "Place";
 
-  // Фото
+  // Photo
   const photo = document.getElementById("place-photo");
   if (photo) {
     photo.src = place.photo || "../images/placeholder.png";
     photo.onerror = () => (photo.src = "../images/placeholder.png");
   }
 
-  // Назва
+  // Name
   const name = document.getElementById("place-name");
-  if (name) name.textContent = place.name || "Без назви";
+  if (name) name.textContent = place.name || "Untitled";
 
-  // Адреса
+  // Address
   const address = document.getElementById("place-address");
   if (address) address.textContent = place.address || "—";
 
-  // Нотатки
+  // Notes
   const notes = document.getElementById("place-notes");
   const notesSection = document.getElementById("notes-section");
   if (place.notes && place.notes.trim()) {
@@ -75,13 +75,13 @@ function displayPlaceDetails(place) {
     if (notesSection) notesSection.classList.add("hidden");
   }
 
-  // Координати та карта
+  // Coordinates and map
   displayCoordinates(place);
 
-  // Дата
+  // Date
   const date = document.getElementById("place-date");
   if (date && place.timestamp) {
-    date.textContent = new Date(place.timestamp).toLocaleDateString("uk-UA", {
+    date.textContent = new Date(place.timestamp).toLocaleDateString("en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -92,7 +92,7 @@ function displayPlaceDetails(place) {
 }
 
 /**
- * Відобразити координати та карту
+ * Display coordinates and map
  */
 function displayCoordinates(place) {
   const coordinates = document.getElementById("place-coordinates");
@@ -103,20 +103,20 @@ function displayCoordinates(place) {
   if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
     const { lat, lng } = place.coordinates;
 
-    // Координати текстом
+    // Coordinates text
     if (coordinates) {
       coordinates.textContent = formatCoordinates(lat, lng);
     }
 
     if (coordsSection) coordsSection.classList.remove("hidden");
 
-    // Кнопка Google Maps
+    // Google Maps button
     if (openMapsBtn) {
       openMapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
       openMapsBtn.style.display = "inline-flex";
     }
 
-    // Міні-карта OpenStreetMap
+    // Mini map OpenStreetMap
     if (mapPreview) {
       const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
         lng - 0.01
@@ -133,7 +133,7 @@ function displayCoordinates(place) {
 }
 
 /**
- * Налаштувати кнопки
+ * Setup buttons
  */
 function setupDetailsButtons(placeId) {
   const editBtn = document.getElementById("edit-btn");
@@ -150,7 +150,7 @@ function setupDetailsButtons(placeId) {
 }
 
 /**
- * Показати модал видалення
+ * Show delete modal
  */
 function showDeleteModal(placeId) {
   const modal = document.getElementById("delete-modal");
@@ -177,19 +177,19 @@ function showDeleteModal(placeId) {
 }
 
 /**
- * Видалити місце
+ * Handle delete place
  */
 async function handleDeletePlace(placeId) {
   try {
     await deletePlace(placeId);
-    showSuccess("Місце видалено!");
+    showSuccess("Place deleted!");
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 1000);
   } catch (error) {
-    console.error("❌ Помилка:", error);
-    showError("Не вдалося видалити");
+    console.error("❌ Error:", error);
+    showError("Failed to delete");
   }
 }
 
-console.log("✅ placeDetails.js завантажено");
+console.log("✅ placeDetails.js loaded");

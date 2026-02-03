@@ -1,15 +1,14 @@
-<!-- pages/offline.html -->
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
 
-    <title>Офлайн - City Assistant</title>
+    <title>Offline - City Assistant</title>
 
     <style>
-      /* Inline стилі, щоб працювало офлайн без CSS файлу */
+      /* Inline styles for offline page */
       * {
         margin: 0;
         padding: 0;
@@ -152,36 +151,36 @@
 
       <div class="status">
         <span class="status-dot"></span>
-        <span>Немає підключення</span>
+        <span>No connection</span>
       </div>
 
-      <h1>Ви офлайн</h1>
+      <h1>You're Offline</h1>
 
       <p>
-        Не хвилюйтесь! Ваші збережені місця все ще доступні. Додаток працює в
-        обмеженому режимі.
+        Don't worry! Your saved places are still available. The app is working
+        in limited mode.
       </p>
 
       <div class="features">
-        <h2>Доступно офлайн:</h2>
+        <h2>Available offline:</h2>
         <ul>
-          <li>Перегляд збережених місць</li>
-          <li>Пошук по місцях</li>
-          <li>Додавання нових місць</li>
-          <li>Редагування та видалення</li>
-          <li>Перегляд фото та координат</li>
+          <li>View saved places</li>
+          <li>Search places</li>
+          <li>Add new places</li>
+          <li>Edit and delete</li>
+          <li>View photos and coordinates</li>
         </ul>
       </div>
 
-      <a href="/index.html" class="button"> 📍 До збережених місць </a>
+      <a href="/index.html" class="button"> 📍 Go to Saved Places </a>
 
       <p style="margin-top: 24px; font-size: 14px; opacity: 0.7">
-        Підключіться до інтернету для повного функціоналу
+        Connect to the internet for full functionality
       </p>
     </div>
 
     <script>
-      // Перевірка підключення
+      // Check connection
       window.addEventListener("online", () => {
         window.location.href = "/index.html";
       });

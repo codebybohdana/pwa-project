@@ -1,7 +1,7 @@
 {
-  "name": "Offline City Assistant",
+  "name": "City Assistant - Offline PWA",
   "short_name": "City Assistant",
-  "description": "Зберігайте улюблені місця міста та користуйтесь ними офлайн",
+  "description": "Save your favorite city places and use them offline",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "dir": "ltr",
-  "lang": "uk",
+  "lang": "en",
   "categories": ["utilities", "travel", "productivity"],
   "icons": [
     {

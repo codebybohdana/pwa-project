@@ -2,100 +2,89 @@
  * ========================================
  * EDIT PLACE MODULE
  * ========================================
- * Модуль для редагування існуючого місця
+ * Editing existing places
  */
 
-// Глобальні змінні
+// Global variables
 let currentPlaceId = null;
 let currentPlace = null;
 let newPhoto = null;
 let newCoordinates = null;
 
 /**
- * Ініціалізація сторінки редагування
+ * Initialize edit page
  */
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("✏️ Ініціалізація сторінки редагування...");
+  console.log("✏️ Initializing edit page...");
 
   try {
-    // Ініціалізувати базу даних
     await initDB();
 
-    // Отримати ID з URL
     const urlParams = new URLSearchParams(window.location.search);
     currentPlaceId = urlParams.get("id");
 
     if (!currentPlaceId) {
-      throw new Error("ID місця не знайдено");
+      throw new Error("Place ID not found");
     }
 
-    console.log("Редагування місця ID:", currentPlaceId);
+    console.log("Editing place ID:", currentPlaceId);
 
-    // Завантажити дані місця
     await loadPlaceForEditing(parseInt(currentPlaceId));
 
-    // Налаштувати форму
     setupEditForm();
-
-    // Налаштувати кнопку зміни фото
     setupChangePhotoButton();
     setupChooseNewPhotoButton();
-
-    // Налаштувати кнопку оновлення локації
     setupUpdateLocationButton();
-
-    // Налаштувати кнопки навігації
     setupNavigationButtons();
   } catch (error) {
-    console.error("❌ Помилка ініціалізації:", error);
-    alert("Помилка: " + error.message);
+    console.error("❌ Initialization error:", error);
+    alert("Error: " + error.message);
     window.location.href = "../index.html";
   }
 });
 
 /**
- * Завантажити дані місця для редагування
+ * Load place data for editing
  */
 async function loadPlaceForEditing(id) {
   try {
-    console.log("📖 Завантаження місця для редагування...");
+    console.log("📖 Loading place for editing...");
 
     const place = await getPlaceById(id);
 
     if (!place) {
-      throw new Error("Місце не знайдено");
+      throw new Error("Place not found");
     }
 
     currentPlace = place;
-    console.log("Місце завантажено:", place);
+    console.log("Place loaded:", place);
 
-    // Заповнити форму
     fillFormWithPlaceData(place);
   } catch (error) {
-    console.error("❌ Помилка завантаження:", error);
+    console.error("❌ Loading error:", error);
     throw error;
   }
 }
 
 /**
- * Заповнити форму даними місця
+ * Fill form with place data
  */
 function fillFormWithPlaceData(place) {
-  console.log("📝 Заповнення форми...");
+  console.log("📝 Filling form...");
 
-  // Назва
+  // Name
   const nameInput = document.getElementById("place-name");
   if (nameInput) nameInput.value = place.name || "";
 
-  // Адреса
+  // Address
   const addressInput = document.getElementById("place-address");
   if (addressInput) addressInput.value = place.address || "";
 
-  // Нотатки
+  // Notes
   const notesInput = document.getElementById("place-notes");
   if (notesInput) notesInput.value = place.notes || "";
 
-  // Поточне фото
+  // Current photo
   const currentPhotoImg = document.getElementById("current-photo-img");
   if (currentPhotoImg) {
     currentPhotoImg.src = place.photo || "../images/placeholder.png";
@@ -103,19 +92,20 @@ function fillFormWithPlaceData(place) {
       this.src = "../images/placeholder.png";
     };
   }
-  // Поточні координати
+
+  // Current coordinates
   const currentCoordsGroup = document.getElementById("current-coords-group");
   const currentCoordsValue = document.getElementById(
     "current-coordinates-value"
   );
   const currentMapsBtn = document.getElementById("current-location-maps-btn");
-  const currentMapPreview = document.getElementById("current-map-preview");
 
   if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
-    const { lat, lng } = place.coordinates;
-    const formatted = formatCoordinates(lat, lng);
+    const formatted = formatCoordinates(
+      place.coordinates.lat,
+      place.coordinates.lng
+    );
 
-    // Показати координати текстом
     if (currentCoordsValue) {
       currentCoordsValue.textContent = formatted;
     }
@@ -124,41 +114,25 @@ function fillFormWithPlaceData(place) {
       currentCoordsGroup.classList.remove("hidden");
     }
 
-    // Показати кнопку Google Maps
     if (currentMapsBtn) {
-      const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+      const mapsUrl = `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`;
       currentMapsBtn.href = mapsUrl;
       currentMapsBtn.style.display = "inline-flex";
     }
-
-    // ДОДАТИ: Показати міні-карту
-    if (currentMapPreview) {
-      const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
-        lng - 0.01
-      },${lat - 0.01},${lng + 0.01},${
-        lat + 0.01
-      }&layer=mapnik&marker=${lat},${lng}`;
-
-      currentMapPreview.innerHTML = `<iframe src="${osmUrl}" style="border: none;"></iframe>`;
-      currentMapPreview.style.display = "block";
-    }
   } else {
     if (currentCoordsValue) {
-      currentCoordsValue.textContent = "Координати не вказані";
+      currentCoordsValue.textContent = "Coordinates not specified";
     }
     if (currentMapsBtn) {
       currentMapsBtn.style.display = "none";
     }
-    if (currentMapPreview) {
-      currentMapPreview.style.display = "none";
-    }
   }
 
-  console.log("✅ Форма заповнена");
+  console.log("✅ Form filled");
 }
 
 /**
- * Налаштувати форму редагування
+ * Setup edit form
  */
 function setupEditForm() {
   const form = document.getElementById("edit-place-form");
@@ -171,62 +145,52 @@ function setupEditForm() {
 }
 
 /**
- * Обробка відправки форми редагування
+ * Handle form submission
  */
 async function handleEditFormSubmit() {
   try {
-    console.log("💾 Збереження змін...");
+    console.log("💾 Saving changes...");
 
-    // Показати loading
     showLoading(true);
 
-    // Отримати дані з форми
     const name = document.getElementById("place-name").value.trim();
     const address = document.getElementById("place-address").value.trim();
     const notes = document.getElementById("place-notes").value.trim();
 
-    // Валідація
     if (!name || !address) {
-      throw new Error("Заповніть обов'язкові поля");
+      throw new Error("Please fill in required fields");
     }
 
-    // Створити оновлений об'єкт місця
     const updatedPlace = {
-      ...currentPlace, // Зберегти всі старі дані
+      ...currentPlace,
       name,
       address,
       notes: notes || "",
     };
 
-    // Оновити фото якщо є нове
     if (newPhoto) {
       updatedPlace.photo = newPhoto;
-      console.log("✅ Фото оновлено");
+      console.log("✅ Photo updated");
     }
 
-    // Оновити координати якщо є нові
     if (newCoordinates) {
       updatedPlace.coordinates = newCoordinates;
-      console.log("✅ Координати оновлено");
+      console.log("✅ Coordinates updated");
     }
 
-    // Оновити timestamp
     updatedPlace.timestamp = Date.now();
 
-    console.log("Оновлені дані:", updatedPlace);
+    console.log("Updated data:", updatedPlace);
 
-    // Зберегти в базу даних
     await updatePlace(currentPlaceId, updatedPlace);
 
-    console.log("✅ Зміни збережено");
+    console.log("✅ Changes saved");
 
-    // Показати успіх
-    alert("✅ Зміни успішно збережено!");
+    alert("✅ Changes saved successfully!");
 
-    // Перенаправити на сторінку деталей
     window.location.href = `place-details.html?id=${currentPlaceId}`;
   } catch (error) {
-    console.error("❌ Помилка збереження:", error);
+    console.error("❌ Save error:", error);
     alert("❌ " + error.message);
   } finally {
     showLoading(false);
@@ -234,7 +198,7 @@ async function handleEditFormSubmit() {
 }
 
 /**
- * Налаштувати кнопку зміни фото
+ * Setup change photo button
  */
 function setupChangePhotoButton() {
   const btn = document.getElementById("change-photo-btn");
@@ -242,17 +206,14 @@ function setupChangePhotoButton() {
 
   btn.addEventListener("click", async () => {
     try {
-      console.log("📸 Зміна фото...");
+      console.log("📸 Changing photo...");
 
-      // Заблокувати кнопку
       btn.disabled = true;
-      btn.textContent = "⏳ Відкриття камери...";
+      btn.textContent = "⏳ Opening camera...";
 
-      // Зробити нове фото
       const photoData = await takePhoto();
       newPhoto = photoData;
 
-      // Показати превью нового фото
       const preview = document.getElementById("new-photo-preview");
       const img = document.getElementById("new-photo-img");
 
@@ -261,24 +222,22 @@ function setupChangePhotoButton() {
         preview.classList.remove("hidden");
       }
 
-      // Налаштувати кнопку видалення нового фото
       const removeBtn = document.getElementById("remove-new-photo-btn");
       if (removeBtn) {
         removeBtn.onclick = () => {
           newPhoto = null;
           preview.classList.add("hidden");
-          btn.textContent = "📸 Зробити нове фото";
+          btn.textContent = "📸 Take New Photo";
         };
       }
 
-      // Оновити кнопку
-      btn.textContent = "✅ Нове фото готове";
+      btn.textContent = "✅ New photo ready";
 
-      console.log("✅ Нове фото збережено");
+      console.log("✅ New photo saved");
     } catch (error) {
-      console.error("❌ Помилка камери:", error);
+      console.error("❌ Camera error:", error);
       alert("❌ " + error.message);
-      btn.textContent = "📸 Спробувати ще раз";
+      btn.textContent = "📸 Try again";
     } finally {
       btn.disabled = false;
     }
@@ -286,7 +245,7 @@ function setupChangePhotoButton() {
 }
 
 /**
- * Налаштувати кнопку вибору з галереї
+ * Setup choose new photo button
  */
 function setupChooseNewPhotoButton() {
   const btn = document.getElementById("choose-new-photo-btn");
@@ -304,14 +263,14 @@ function setupChooseNewPhotoButton() {
 
     try {
       btn.disabled = true;
-      btn.textContent = "⏳ Завантаження...";
+      btn.textContent = "⏳ Loading...";
 
       if (!file.type.startsWith("image/")) {
-        throw new Error("Будь ласка, виберіть файл зображення");
+        throw new Error("Please select an image file");
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        throw new Error("Файл занадто великий. Максимум 10MB");
+        throw new Error("File too large. Maximum 10MB");
       }
 
       const photoData = await fileToBase64(file);
@@ -331,16 +290,16 @@ function setupChooseNewPhotoButton() {
         removeBtn.onclick = () => {
           newPhoto = null;
           preview.classList.add("hidden");
-          btn.textContent = "🖼️ Вибрати з галереї";
+          btn.textContent = "🖼️ Choose from Gallery";
         };
       }
 
-      btn.textContent = "✅ Фото вибрано";
-      console.log("✅ Фото з галереї завантажено");
+      btn.textContent = "✅ Photo selected";
+      console.log("✅ Photo from gallery loaded");
     } catch (error) {
-      console.error("❌ Помилка:", error);
+      console.error("❌ Error:", error);
       alert("❌ " + error.message);
-      btn.textContent = "🖼️ Спробувати ще раз";
+      btn.textContent = "🖼️ Try again";
     } finally {
       btn.disabled = false;
       fileInput.value = "";
@@ -348,16 +307,96 @@ function setupChooseNewPhotoButton() {
   });
 }
 
-// Копіюйте ці helper функції з addPlace.js:
+/**
+ * Setup update location button
+ */
+function setupUpdateLocationButton() {
+  const btn = document.getElementById("update-location-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    try {
+      console.log("📍 Updating geolocation...");
+
+      btn.disabled = true;
+      btn.textContent = "⏳ Getting location...";
+
+      const coords = await getCurrentPosition();
+      newCoordinates = coords;
+
+      const formatted = formatCoordinates(coords.lat, coords.lng);
+      const display = document.getElementById("new-coordinates-display");
+      const value = document.getElementById("new-coordinates-value");
+
+      if (display && value) {
+        value.textContent = formatted;
+        display.classList.remove("hidden");
+      }
+
+      const previewBtn = document.getElementById("preview-new-location");
+      if (previewBtn) {
+        const mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+        previewBtn.href = mapsUrl;
+        previewBtn.style.display = "inline-flex";
+      }
+
+      btn.textContent = "✅ New location obtained";
+
+      console.log("✅ New coordinates:", coords);
+    } catch (error) {
+      console.error("❌ Geolocation error:", error);
+      alert("❌ " + error.message);
+      btn.textContent = "📍 Try again";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+/**
+ * Setup navigation buttons
+ */
+function setupNavigationButtons() {
+  const backBtn = document.getElementById("back-button");
+  if (backBtn) {
+    backBtn.href = `place-details.html?id=${currentPlaceId}`;
+  }
+
+  const cancelBtn = document.getElementById("cancel-btn");
+  if (cancelBtn) {
+    cancelBtn.href = `place-details.html?id=${currentPlaceId}`;
+  }
+}
+
+/**
+ * Show/hide loading overlay
+ */
+function showLoading(show) {
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) {
+    if (show) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+}
+
+/**
+ * Convert File to base64
+ */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Помилка читання файлу"));
+    reader.onerror = () => reject(new Error("File read error"));
     reader.readAsDataURL(file);
   });
 }
 
+/**
+ * Compress photo if needed
+ */
 async function compressPhotoIfNeeded(base64Data) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -386,96 +425,14 @@ async function compressPhotoIfNeeded(base64Data) {
 
       const compressed = canvas.toDataURL("image/jpeg", 0.8);
       console.log(
-        `✅ Стиснуто: ${img.width}x${img.height} → ${width}x${height}`
+        `✅ Compressed: ${img.width}x${img.height} → ${width}x${height}`
       );
       resolve(compressed);
     };
 
-    img.onerror = () => reject(new Error("Помилка завантаження"));
+    img.onerror = () => reject(new Error("Image load error"));
     img.src = base64Data;
   });
 }
 
-/**
- * Налаштувати кнопку оновлення локації
- */
-function setupUpdateLocationButton() {
-  const btn = document.getElementById("update-location-btn");
-  if (!btn) return;
-
-  btn.addEventListener("click", async () => {
-    try {
-      console.log("📍 Оновлення геолокації...");
-
-      // Заблокувати кнопку
-      btn.disabled = true;
-      btn.textContent = "⏳ Отримання локації...";
-
-      // Отримати нові координати
-      const coords = await getCurrentPosition();
-      newCoordinates = coords;
-
-      // Форматувати і показати
-      const formatted = formatCoordinates(coords.lat, coords.lng);
-      const display = document.getElementById("new-coordinates-display");
-      const value = document.getElementById("new-coordinates-value");
-
-      if (display && value) {
-        value.textContent = formatted;
-        display.classList.remove("hidden");
-      }
-
-      // Налаштувати кнопку попереднього перегляду
-      const previewBtn = document.getElementById("preview-new-location");
-      if (previewBtn) {
-        const mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
-        previewBtn.href = mapsUrl;
-        previewBtn.style.display = "inline-flex";
-      }
-
-      // Оновити кнопку
-      btn.textContent = "✅ Нова локація отримана";
-
-      console.log("✅ Нові координати:", coords);
-    } catch (error) {
-      console.error("❌ Помилка геолокації:", error);
-      alert("❌ " + error.message);
-      btn.textContent = "📍 Спробувати ще раз";
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
-/**
- * Налаштувати кнопки навігації
- */
-function setupNavigationButtons() {
-  // Кнопка "Назад"
-  const backBtn = document.getElementById("back-button");
-  if (backBtn) {
-    backBtn.href = `place-details.html?id=${currentPlaceId}`;
-  }
-
-  // Кнопка "Скасувати"
-  const cancelBtn = document.getElementById("cancel-btn");
-  if (cancelBtn) {
-    cancelBtn.href = `place-details.html?id=${currentPlaceId}`;
-  }
-}
-
-/**
- * Показати/сховати loading overlay
- */
-function showLoading(show) {
-  const overlay = document.getElementById("loading-overlay");
-  if (overlay) {
-    if (show) {
-      overlay.classList.remove("hidden");
-    } else {
-      overlay.classList.add("hidden");
-    }
-  }
-}
-
-console.log("✅ Модуль edit.js завантажено");
+console.log("✅ edit.js loaded");

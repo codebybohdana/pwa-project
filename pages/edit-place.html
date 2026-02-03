@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
 
-    <title>Редагувати місце - City Assistant</title>
+    <title>Edit Place - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
@@ -15,8 +15,8 @@
     <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="#" id="back-button" class="back-button">← Назад</a>
-        <h1 class="header-title">Редагувати місце</h1>
+        <a href="#" id="back-button" class="back-button">← Back</a>
+        <h1 class="header-title">Edit Place</h1>
       </div>
     </header>
 
@@ -24,70 +24,70 @@
     <main class="main">
       <div class="container">
         <form id="edit-place-form" class="form">
-          <!-- Назва місця -->
+          <!-- Place Name -->
           <div class="form-group">
             <label for="place-name" class="form-label">
-              Назва місця <span class="required">*</span>
+              Place Name <span class="required">*</span>
             </label>
             <input
               type="text"
               id="place-name"
               class="form-input"
-              placeholder="Наприклад: Оперний театр"
+              placeholder="e.g., Opera House"
               required
               minlength="3"
               maxlength="100"
             />
           </div>
 
-          <!-- Адреса -->
+          <!-- Address -->
           <div class="form-group">
             <label for="place-address" class="form-label">
-              Адреса <span class="required">*</span>
+              Address <span class="required">*</span>
             </label>
             <input
               type="text"
               id="place-address"
               class="form-input"
-              placeholder="Наприклад: вул. Володимирська, 50"
+              placeholder="e.g., 50 Main Street"
               required
               minlength="5"
               maxlength="200"
             />
           </div>
 
-          <!-- Нотатки -->
+          <!-- Notes -->
           <div class="form-group">
             <label for="place-notes" class="form-label">
-              Нотатки (опціонально)
+              Notes (optional)
             </label>
             <textarea
               id="place-notes"
               class="form-textarea"
-              placeholder="Додайте свої нотатки про це місце..."
+              placeholder="Add your notes about this place..."
               rows="4"
               maxlength="500"
             ></textarea>
-            <span class="form-hint">Максимум 500 символів</span>
+            <span class="form-hint">Maximum 500 characters</span>
           </div>
 
-          <!-- Поточне фото -->
+          <!-- Current Photo -->
           <div class="form-group">
-            <label class="form-label">Поточне фото</label>
+            <label class="form-label">Current Photo</label>
             <div id="current-photo-container" class="photo-preview">
               <img
                 id="current-photo-img"
                 src="../images/placeholder.png"
-                alt="Поточне фото"
+                alt="Current photo"
               />
             </div>
           </div>
 
-          <!-- Змінити фото -->
+          <!-- Change Photo -->
           <div class="form-group">
-            <label class="form-label">Змінити фото (опціонально)</label>
-            
-            <!-- Кнопки вибору фото -->
+            <label class="form-label">Change Photo (optional)</label>
+
+            <!-- Photo buttons -->
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
               <button
                 type="button"
@@ -95,20 +95,20 @@
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
               >
-                📸 Зробити нове фото
+                📸 Take New Photo
               </button>
-              
+
               <button
                 type="button"
                 id="choose-new-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
               >
-                🖼️ Вибрати з галереї
+                🖼️ Choose from Gallery
               </button>
             </div>
 
-            <!-- Прихований input -->
+            <!-- Hidden file input -->
             <input
               type="file"
               id="new-photo-file-input"
@@ -116,9 +116,9 @@
               style="display: none;"
             />
 
-            <!-- Превью нового фото -->
+            <!-- New photo preview -->
             <div id="new-photo-preview" class="photo-preview hidden">
-              <img id="new-photo-img" src="" alt="Нове фото" />
+              <img id="new-photo-img" src="" alt="New photo" />
               <button
                 type="button"
                 id="remove-new-photo-btn"
@@ -129,15 +129,15 @@
             </div>
           </div>
 
-          <!-- Поточна геолокація -->
+          <!-- Current Geolocation -->
           <div class="form-group" id="current-coords-group">
-            <label class="form-label">Поточна геолокація</label>
+            <label class="form-label">Current Geolocation</label>
             <div class="coordinates-box">
               <p class="coordinates-text">
                 📍 <span id="current-coordinates-value"></span>
               </p>
-              
-              <!-- Кнопка Google Maps -->
+
+              <!-- Google Maps button -->
               
                 id="current-location-maps-btn"
                 href="#"
@@ -150,31 +150,26 @@
                   display: none;
                 "
               >
-                📍 Відкрити на Google Maps
+                📍 Open on Google Maps
               </a>
-
-              <!-- ДОДАТИ: Міні-карта поточних координат -->
-              <div id="current-map-preview" class="map-container" style="display: none; margin-top: 16px;">
-                <!-- Карта буде додана через JS -->
-              </div>
             </div>
           </div>
 
-          <!-- Оновити геолокацію -->
+          <!-- Update Geolocation -->
           <div class="form-group">
-            <label class="form-label">Оновити геолокацію (опціонально)</label>
+            <label class="form-label">Update Geolocation (optional)</label>
             <button
               type="button"
               id="update-location-btn"
               class="button button-secondary"
             >
-              📍 Отримати нову локацію
+              📍 Get New Location
             </button>
 
-            <!-- Нові координати -->
+            <!-- New coordinates -->
             <div id="new-coordinates-display" class="coordinates-box hidden">
               <p class="coordinates-text">
-                📍 Нова: <span id="new-coordinates-value"></span>
+                📍 New: <span id="new-coordinates-value"></span>
               </p>
               
                 id="preview-new-location"
@@ -188,7 +183,7 @@
                   display: none;
                 "
               >
-                🗺️ Переглянути на Google Maps
+                🗺️ View on Google Maps
               </a>
             </div>
           </div>
@@ -196,10 +191,10 @@
           <!-- Buttons -->
           <div class="form-actions">
             <button type="submit" class="button button-primary button-full">
-              💾 Зберегти зміни
+              💾 Save Changes
             </button>
             <a href="#" id="cancel-btn" class="button button-outline button-full">
-              Скасувати
+              Cancel
             </a>
           </div>
         </form>
@@ -209,7 +204,7 @@
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay hidden">
       <div class="loading-spinner"></div>
-      <p>Збереження...</p>
+      <p>Saving...</p>
     </div>
 
     <!-- JavaScript -->

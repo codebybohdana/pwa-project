@@ -1,14 +1,14 @@
 /**
  * ========================================
- * MAIN APP - ENTRY POINT
+ * MAIN APPLICATION
  * ========================================
- * Головний файл - тільки ініціалізація
+ * Entry point - initialization only
  */
 
-// Визначити поточну сторінку
+// Determine current page
 const currentPath = window.location.pathname;
 
-// Перевірки сторінки
+// Page checks
 function isIndexPage() {
   return (
     currentPath.endsWith("index.html") ||
@@ -25,31 +25,33 @@ function isDetailsPage() {
   return currentPath.includes("place-details.html");
 }
 
-// Головна ініціалізація
+// Main initialization
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🚀 Запуск додатку...");
+  console.log("🚀 Starting app...");
 
   try {
-    // Ініціалізувати базу даних
+    // Initialize database
     await initDB();
 
-    // Ініціалізувати потрібну сторінку
-    if (isIndexPage()) {
+    // Initialize appropriate page
+    if (isIndexPage() && typeof initIndexPage === "function") {
       await initIndexPage();
-    } else if (isAddPlacePage()) {
+    } else if (isAddPlacePage() && typeof initAddPlacePage === "function") {
       await initAddPlacePage();
-    } else if (isDetailsPage()) {
+    } else if (isDetailsPage() && typeof initDetailsPage === "function") {
       await initDetailsPage();
     }
 
-    // Завжди оновлювати онлайн статус
-    updateOnlineStatus();
+    // Always update online status
+    if (typeof updateOnlineStatus === "function") {
+      updateOnlineStatus();
+    }
 
-    console.log("✅ Додаток ініціалізовано");
+    console.log("✅ App initialized");
   } catch (error) {
-    console.error("❌ Критична помилка:", error);
-    showError("Помилка завантаження додатку");
+    console.error("❌ Critical error:", error);
+    alert("Error loading app: " + error.message);
   }
 });
 
-console.log("✅ app.js завантажено");
+console.log("✅ app.js loaded");

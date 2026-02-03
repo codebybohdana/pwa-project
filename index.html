@@ -1,15 +1,12 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-    <meta
-      name="description"
-      content="Зберігайте улюблені місця міста та користуйтесь ними офлайн"
-    />
+    <meta name="description" content="Save your favorite city places and use them offline" />
 
-    <title>Offline City Assistant</title>
+    <title>City Assistant - PWA</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -32,10 +29,10 @@
       </div>
     </header>
 
-    <!-- Offline Banner (прихований за замовчуванням) -->
+    <!-- Offline Banner (hidden by default) -->
     <div id="offline-banner" class="offline-banner hidden">
       <div class="container">
-        <p>⚠️ Ви офлайн. Додаток працює в обмеженому режимі.</p>
+        <p>⚠️ You're offline. App is running in limited mode.</p>
       </div>
     </div>
 
@@ -49,7 +46,7 @@
               type="text"
               id="search-input"
               class="search-input"
-              placeholder="🔍 Шукати місця..."
+              placeholder="🔍 Search places..."
               autocomplete="off"
             />
           </div>
@@ -58,23 +55,23 @@
         <!-- Add Place Button -->
         <div class="actions">
           <a href="pages/add-place.html" class="button button-primary">
-            ➕ Додати місце
+            ➕ Add Place
           </a>
         </div>
 
         <!-- Places List -->
         <div id="places-list" class="places-grid">
-          <!-- Місця будуть додаватись динамічно через JS -->
+          <!-- Places will be added dynamically via JS -->
         </div>
 
-        <!-- Empty State (показується коли немає місць) -->
+        <!-- Empty State (shown when no places) -->
         <div id="empty-state" class="empty-state hidden">
           <div class="empty-state-content">
             <div class="empty-state-icon">📍</div>
-            <h2>Немає збережених місць</h2>
-            <p>Додайте своє перше улюблене місце, щоб почати!</p>
+            <h2>No saved places</h2>
+            <p>Add your first favorite place to get started!</p>
             <a href="pages/add-place.html" class="button button-primary">
-              Додати перше місце
+              Add First Place
             </a>
           </div>
         </div>
@@ -84,34 +81,31 @@
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
-        <p>© 2026 Offline City Assistant | PWA Project</p>
+        <p>© 2026 City Assistant | PWA Project</p>
       </div>
     </footer>
 
     <!-- JavaScript -->
-    <!-- JavaScript -->
     <script src="js/db.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/pages/index.js"></script>
     <script src="js/app.js"></script>
 
     <!-- Service Worker Registration -->
     <script>
-      // Реєстрація Service Worker
+      // Register Service Worker
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
             .register("./service-worker.js")
             .then((reg) => {
-              console.log("SW register success", reg.scope);
+              console.log("✅ SW registered", reg.scope);
             })
             .catch((err) => {
-              console.error("SW register failed", err);
+              console.error("❌ SW registration failed", err);
             });
         });
       }
 
-      // Відстеження online/offline статусу
+      // Track online/offline status
       window.addEventListener("online", () => {
         document.getElementById("online-status").innerHTML =
           '<span class="status-dot status-online"></span><span class="status-text">Online</span>';

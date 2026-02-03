@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
 
-    <title>Додати місце - City Assistant</title>
+    <title>Add Place - City Assistant</title>
 
     <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
@@ -15,8 +15,8 @@
     <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="../index.html" class="back-button">← Назад</a>
-        <h1 class="header-title">Додати місце</h1>
+        <a href="../index.html" class="back-button">← Back</a>
+        <h1 class="header-title">Add Place</h1>
       </div>
     </header>
 
@@ -24,70 +24,70 @@
     <main class="main">
       <div class="container">
         <form id="add-place-form" class="form">
-          <!-- Назва місця -->
+          <!-- Place Name -->
           <div class="form-group">
             <label for="place-name" class="form-label">
-              Назва місця <span class="required">*</span>
+              Place Name <span class="required">*</span>
             </label>
             <input
               type="text"
               id="place-name"
               class="form-input"
-              placeholder="Наприклад: Оперний театр"
+              placeholder="e.g., Opera House"
               required
               minlength="3"
               maxlength="100"
             />
           </div>
 
-          <!-- Адреса -->
+          <!-- Address -->
           <div class="form-group">
             <label for="place-address" class="form-label">
-              Адреса <span class="required">*</span>
+              Address <span class="required">*</span>
             </label>
             <input
               type="text"
               id="place-address"
               class="form-input"
-              placeholder="Наприклад: вул. Володимирська, 50"
+              placeholder="e.g., 50 Main Street"
               required
               minlength="5"
               maxlength="200"
             />
           </div>
 
-          <!-- Нотатки -->
+          <!-- Notes -->
           <div class="form-group">
             <label for="place-notes" class="form-label">
-              Нотатки (опціонально)
+              Notes (optional)
             </label>
             <textarea
               id="place-notes"
               class="form-textarea"
-              placeholder="Додайте свої нотатки про це місце..."
+              placeholder="Add your notes about this place..."
               rows="4"
               maxlength="500"
             ></textarea>
-            <span class="form-hint">Максимум 500 символів</span>
+            <span class="form-hint">Maximum 500 characters</span>
           </div>
 
-          <!-- Геолокація -->
+          <!-- Geolocation -->
           <div class="form-group">
-            <label class="form-label">Геолокація</label>
+            <label class="form-label">Geolocation</label>
             <button
               type="button"
               id="get-location-btn"
               class="button button-secondary"
             >
-              📍 Отримати мою локацію
+              📍 Get My Location
             </button>
 
-            <!-- Координати (приховано поки не отримаємо) -->
+            <!-- Coordinates (hidden until obtained) -->
             <div id="coordinates-display" class="coordinates-box hidden">
               <p class="coordinates-text">
                 📍 <span id="coordinates-value"></span>
               </p>
-              <!-- Кнопка відкрити на карті -->
+              <!-- Open on map button -->
               
                 id="preview-on-map"
                 href="#"
@@ -100,16 +100,16 @@
                   display: none;
                 "
               >
-                🗺️ Переглянути на Google Maps
+                🗺️ View on Google Maps
               </a>
             </div>
           </div>
 
-          <!-- Фото -->
+          <!-- Photo -->
           <div class="form-group">
-            <label class="form-label">Фото місця</label>
-            
-            <!-- Кнопки вибору фото -->
+            <label class="form-label">Place Photo</label>
+
+            <!-- Photo buttons -->
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
               <button
                 type="button"
@@ -117,20 +117,20 @@
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
               >
-                📸 Зробити фото
+                📸 Take Photo
               </button>
-              
+
               <button
                 type="button"
                 id="choose-photo-btn"
                 class="button button-secondary"
                 style="flex: 1; min-width: 180px;"
               >
-                🖼️ Вибрати з галереї
+                🖼️ Choose from Gallery
               </button>
             </div>
 
-            <!-- Прихований input для вибору файлу -->
+            <!-- Hidden file input -->
             <input
               type="file"
               id="photo-file-input"
@@ -138,7 +138,7 @@
               style="display: none;"
             />
 
-            <!-- Превью фото -->
+            <!-- Photo preview -->
             <div id="photo-preview" class="photo-preview hidden">
               <img id="photo-preview-img" src="" alt="Preview" />
               <button
@@ -154,20 +154,20 @@
           <!-- Buttons -->
           <div class="form-actions">
             <button type="submit" class="button button-primary button-full">
-              💾 Зберегти місце
+              💾 Save Place
             </button>
             <a href="../index.html" class="button button-outline button-full">
-              Скасувати
+              Cancel
             </a>
           </div>
         </form>
       </div>
     </main>
 
-    <!-- Loading Overlay (приховано за замовчуванням) -->
+    <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay hidden">
       <div class="loading-spinner"></div>
-      <p>Збереження...</p>
+      <p>Saving...</p>
     </div>
 
     <!-- JavaScript -->

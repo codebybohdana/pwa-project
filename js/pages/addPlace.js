@@ -1,18 +1,18 @@
 /**
  * ========================================
- * ADD PLACE PAGE - Додавання місця
+ * ADD PLACE PAGE - Adding new places
  * ========================================
  */
 
-// Глобальні змінні для форми
+// Global variables for form
 let currentPhoto = null;
 let currentCoordinates = null;
 
 /**
- * Ініціалізація сторінки додавання
+ * Initialize add place page
  */
 async function initAddPlacePage() {
-  console.log("📝 Ініціалізація сторінки додавання...");
+  console.log("📝 Initializing add place page...");
 
   try {
     setupAddPlaceForm();
@@ -20,13 +20,13 @@ async function initAddPlacePage() {
     setupCameraButton();
     setupChoosePhotoButton();
   } catch (error) {
-    console.error("❌ Помилка:", error);
-    showError("Помилка завантаження форми");
+    console.error("❌ Error:", error);
+    showError("Failed to load form");
   }
 }
 
 /**
- * Налаштувати форму
+ * Setup add place form
  */
 function setupAddPlaceForm() {
   const form = document.getElementById("add-place-form");
@@ -39,11 +39,11 @@ function setupAddPlaceForm() {
 }
 
 /**
- * Обробка відправки форми
+ * Handle form submission
  */
 async function handleFormSubmit() {
   try {
-    console.log("💾 Збереження...");
+    console.log("💾 Saving...");
     showLoading(true);
 
     const name = document.getElementById("place-name").value.trim();
@@ -51,7 +51,7 @@ async function handleFormSubmit() {
     const notes = document.getElementById("place-notes").value.trim();
 
     if (!name || !address) {
-      throw new Error("Заповніть обов'язкові поля");
+      throw new Error("Please fill in required fields");
     }
 
     const placeData = {
@@ -64,22 +64,22 @@ async function handleFormSubmit() {
     };
 
     const id = await addPlace(placeData);
-    console.log("✅ Збережено з ID:", id);
+    console.log("✅ Saved with ID:", id);
 
-    showSuccess("Місце успішно збережено!");
+    showSuccess("Place saved successfully!");
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 1000);
   } catch (error) {
-    console.error("❌ Помилка:", error);
-    showError(error.message || "Не вдалося зберегти");
+    console.error("❌ Error:", error);
+    showError(error.message || "Failed to save place");
   } finally {
     showLoading(false);
   }
 }
 
 /**
- * Налаштувати кнопку геолокації
+ * Setup location button
  */
 function setupLocationButton() {
   const btn = document.getElementById("get-location-btn");
@@ -88,7 +88,7 @@ function setupLocationButton() {
   btn.addEventListener("click", async () => {
     try {
       btn.disabled = true;
-      btn.textContent = "⏳ Отримання...";
+      btn.textContent = "⏳ Getting location...";
 
       const coords = await getCurrentPosition();
       currentCoordinates = coords;
@@ -108,12 +108,14 @@ function setupLocationButton() {
         previewBtn.style.display = "inline-flex";
       }
 
-      btn.textContent = "✅ Локація отримана";
+      btn.textContent = "✅ Location obtained";
       btn.classList.add("button-success");
+
+      console.log("✅ Coordinates:", coords);
     } catch (error) {
-      console.error("❌ Помилка:", error);
+      console.error("❌ Error:", error);
       showError(error.message);
-      btn.textContent = "📍 Спробувати ще раз";
+      btn.textContent = "📍 Try again";
     } finally {
       btn.disabled = false;
     }
@@ -121,10 +123,7 @@ function setupLocationButton() {
 }
 
 /**
- * Налаштувати кнопку камери
- */
-/**
- * Налаштувати кнопку камери
+ * Setup camera button
  */
 function setupCameraButton() {
   const btn = document.getElementById("take-photo-btn");
@@ -133,19 +132,21 @@ function setupCameraButton() {
   btn.addEventListener("click", async () => {
     try {
       btn.disabled = true;
-      btn.textContent = "⏳ Відкриття камери...";
+      btn.textContent = "⏳ Opening camera...";
 
       const photoData = await takePhoto();
       currentPhoto = photoData;
 
       showPhotoPreview(photoData);
 
-      btn.textContent = "✅ Фото зроблено";
+      btn.textContent = "✅ Photo taken";
       btn.classList.add("button-success");
+
+      console.log("✅ Photo saved");
     } catch (error) {
-      console.error("❌ Помилка:", error);
+      console.error("❌ Error:", error);
       showError(error.message);
-      btn.textContent = "📸 Спробувати ще раз";
+      btn.textContent = "📸 Try again";
     } finally {
       btn.disabled = false;
     }
@@ -153,7 +154,7 @@ function setupCameraButton() {
 }
 
 /**
- * Налаштувати кнопку вибору з галереї
+ * Setup choose photo button
  */
 function setupChoosePhotoButton() {
   const btn = document.getElementById("choose-photo-btn");
@@ -161,58 +162,49 @@ function setupChoosePhotoButton() {
 
   if (!btn || !fileInput) return;
 
-  // Натискання на кнопку відкриває file picker
   btn.addEventListener("click", () => {
     fileInput.click();
   });
 
-  // Обробка вибраного файлу
   fileInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     try {
       btn.disabled = true;
-      btn.textContent = "⏳ Завантаження...";
+      btn.textContent = "⏳ Loading...";
 
-      // Перевірити тип файлу
       if (!file.type.startsWith("image/")) {
-        throw new Error("Будь ласка, виберіть файл зображення");
+        throw new Error("Please select an image file");
       }
 
-      // Перевірити розмір (макс 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        throw new Error("Файл занадто великий. Максимум 10MB");
+        throw new Error("File too large. Maximum 10MB");
       }
 
-      // Конвертувати в base64
       const photoData = await fileToBase64(file);
-
-      // Стиснути якщо потрібно
       const compressed = await compressPhotoIfNeeded(photoData);
       currentPhoto = compressed;
 
       showPhotoPreview(compressed);
 
-      btn.textContent = "✅ Фото вибрано";
+      btn.textContent = "✅ Photo selected";
       btn.classList.add("button-success");
 
-      console.log("✅ Фото з галереї завантажено");
+      console.log("✅ Photo from gallery loaded");
     } catch (error) {
-      console.error("❌ Помилка:", error);
+      console.error("❌ Error:", error);
       showError(error.message);
-      btn.textContent = "🖼️ Спробувати ще раз";
+      btn.textContent = "🖼️ Try again";
     } finally {
       btn.disabled = false;
-      // Очистити input щоб можна було вибрати той самий файл знову
       fileInput.value = "";
     }
   });
 }
 
 /**
- * Показати превью фото
+ * Show photo preview
  */
 function showPhotoPreview(photoData) {
   const preview = document.getElementById("photo-preview");
@@ -223,7 +215,6 @@ function showPhotoPreview(photoData) {
     preview.classList.remove("hidden");
   }
 
-  // Налаштувати кнопку видалення
   const removeBtn = document.getElementById("remove-photo-btn");
   const cameraBtn = document.getElementById("take-photo-btn");
   const chooseBtn = document.getElementById("choose-photo-btn");
@@ -233,13 +224,12 @@ function showPhotoPreview(photoData) {
       currentPhoto = null;
       preview.classList.add("hidden");
 
-      // Скинути кнопки
       if (cameraBtn) {
-        cameraBtn.textContent = "📸 Зробити фото";
+        cameraBtn.textContent = "📸 Take Photo";
         cameraBtn.classList.remove("button-success");
       }
       if (chooseBtn) {
-        chooseBtn.textContent = "🖼️ Вибрати з галереї";
+        chooseBtn.textContent = "🖼️ Choose from Gallery";
         chooseBtn.classList.remove("button-success");
       }
     };
@@ -247,26 +237,19 @@ function showPhotoPreview(photoData) {
 }
 
 /**
- * Конвертувати File в base64
+ * Convert File to base64
  */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.onerror = () => {
-      reject(new Error("Помилка читання файлу"));
-    };
-
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("File read error"));
     reader.readAsDataURL(file);
   });
 }
 
 /**
- * Стиснути фото якщо потрібно
+ * Compress photo if needed
  */
 async function compressPhotoIfNeeded(base64Data) {
   return new Promise((resolve, reject) => {
@@ -275,22 +258,18 @@ async function compressPhotoIfNeeded(base64Data) {
     img.onload = () => {
       const maxWidth = 1920;
       const maxHeight = 1080;
-
       let width = img.width;
       let height = img.height;
 
-      // Якщо фото менше ніж ліміт — не стискати
       if (width <= maxWidth && height <= maxHeight) {
         resolve(base64Data);
         return;
       }
 
-      // Обчислити нові розміри
       const ratio = Math.min(maxWidth / width, maxHeight / height);
       width = Math.floor(width * ratio);
       height = Math.floor(height * ratio);
 
-      // Створити canvas і стиснути
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
@@ -299,19 +278,15 @@ async function compressPhotoIfNeeded(base64Data) {
       ctx.drawImage(img, 0, 0, width, height);
 
       const compressed = canvas.toDataURL("image/jpeg", 0.8);
-
       console.log(
-        `✅ Фото стиснуто: ${img.width}x${img.height} → ${width}x${height}`
+        `✅ Compressed: ${img.width}x${img.height} → ${width}x${height}`
       );
       resolve(compressed);
     };
 
-    img.onerror = () => {
-      reject(new Error("Помилка завантаження зображення"));
-    };
-
+    img.onerror = () => reject(new Error("Image load error"));
     img.src = base64Data;
   });
 }
 
-console.log("✅ addPlace.js завантажено");
+console.log("✅ addPlace.js loaded");

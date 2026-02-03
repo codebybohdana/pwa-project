@@ -2,11 +2,11 @@
  * ========================================
  * UTILITY FUNCTIONS
  * ========================================
- * Helper функції для всього додатку
+ * Helper functions for the entire app
  */
 
 /**
- * Показати повідомлення про помилку
+ * Show error message
  */
 function showError(message) {
   alert("❌ " + message);
@@ -14,7 +14,7 @@ function showError(message) {
 }
 
 /**
- * Показати повідомлення про успіх
+ * Show success message
  */
 function showSuccess(message) {
   alert("✅ " + message);
@@ -22,7 +22,7 @@ function showSuccess(message) {
 }
 
 /**
- * Показати/сховати loading overlay
+ * Show/hide loading overlay
  */
 function showLoading(show) {
   const overlay = document.getElementById("loading-overlay");
@@ -36,7 +36,7 @@ function showLoading(show) {
 }
 
 /**
- * Оновити статус online/offline
+ * Update online/offline status
  */
 function updateOnlineStatus() {
   const statusElement = document.getElementById("online-status");
@@ -66,7 +66,7 @@ function updateOnlineStatus() {
 }
 
 /**
- * Екранувати HTML
+ * Escape HTML
  */
 function escapeHtml(text) {
   if (!text) return "";
@@ -75,4 +75,4 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-console.log("✅ utils.js завантажено");
+console.log("✅ utils.js loaded");
