@@ -1,126 +1,164 @@
 /**
- * db.js
- * IndexedDB для офлайн-зберігання місць.
- * ✅ ВАЖЛИВО: тут НЕ має бути автоматичного initDB на DOMContentLoaded.
- * initDB викликається 1 раз в app.js
+ * DATABASE MODULE (IndexedDB)
  */
 
 const DB_NAME = "CityAssistantDB";
-const DB_VERSION = 2;
+const DB_VERSION = 1;
 const STORE_NAME = "places";
 
 let db = null;
 
-function initDB() {
+async function initDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    console.log("🔄 Initializing database...");
 
-    req.onerror = () => reject(req.error);
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    req.onupgradeneeded = (event) => {
+    request.onerror = () => {
+      console.error("❌ Database error:", request.error);
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      db = request.result;
+      console.log("✅ Database opened");
+      resolve(db);
+    };
+
+    request.onupgradeneeded = (event) => {
+      console.log("🔧 Creating database...");
       const database = event.target.result;
 
       if (!database.objectStoreNames.contains(STORE_NAME)) {
-        const store = database.createObjectStore(STORE_NAME, {
+        const objectStore = database.createObjectStore(STORE_NAME, {
           keyPath: "id",
           autoIncrement: true,
         });
-
-        store.createIndex("name", "name", { unique: false });
-        store.createIndex("timestamp", "timestamp", { unique: false });
-      } else {
-        // Можна робити міграції версій тут при потребі
+        objectStore.createIndex("name", "name", { unique: false });
+        objectStore.createIndex("timestamp", "timestamp", { unique: false });
+        console.log("✅ Object store created");
       }
     };
+  });
+}
 
-    req.onsuccess = () => {
-      db = req.result;
-      resolve(db);
+async function addPlace(placeData) {
+  return new Promise((resolve, reject) => {
+    if (!placeData.timestamp) {
+      placeData.timestamp = Date.now();
+    }
+
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.add(placeData);
+
+    request.onsuccess = () => {
+      console.log("✅ Place added:", request.result);
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      console.error("❌ Error:", request.error);
+      reject(request.error);
     };
   });
 }
 
-function addPlace(place) {
+async function getAllPlaces() {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_NAME], "readwrite");
-    const store = tx.objectStore(STORE_NAME);
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.getAll();
 
-    // timestamp завжди оновлюємо
-    const data = { ...place, timestamp: Date.now() };
-
-    const req = store.add(data);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function getAllPlaces() {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_NAME], "readonly");
-    const store = tx.objectStore(STORE_NAME);
-
-    const req = store.getAll();
-    req.onsuccess = () => {
-      const list = req.result || [];
-      list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      resolve(list);
+    request.onsuccess = () => {
+      const places = request.result;
+      places.sort((a, b) => b.timestamp - a.timestamp);
+      console.log(`✅ Found ${places.length} places`);
+      resolve(places);
     };
-    req.onerror = () => reject(req.error);
+
+    request.onerror = () => {
+      console.error("❌ Error:", request.error);
+      reject(request.error);
+    };
   });
 }
 
-function getPlaceById(id) {
+async function getPlaceById(id) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_NAME], "readonly");
-    const store = tx.objectStore(STORE_NAME);
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.get(Number(id));
 
-    const req = store.get(Number(id));
-    req.onsuccess = () => resolve(req.result || null);
-    req.onerror = () => reject(req.error);
+    request.onsuccess = () => {
+      resolve(request.result || null);
+    };
+
+    request.onerror = () => {
+      console.error("❌ Error:", request.error);
+      reject(request.error);
+    };
   });
 }
 
-function updatePlace(id, place) {
+async function updatePlace(id, placeData) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_NAME], "readwrite");
-    const store = tx.objectStore(STORE_NAME);
+    placeData.id = Number(id);
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.put(placeData);
 
-    const data = { ...place, id: Number(id), timestamp: Date.now() };
-    const req = store.put(data);
+    request.onsuccess = () => {
+      console.log("✅ Place updated");
+      resolve();
+    };
 
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    request.onerror = () => {
+      console.error("❌ Error:", request.error);
+      reject(request.error);
+    };
   });
 }
 
-function deletePlace(id) {
+async function deletePlace(id) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_NAME], "readwrite");
-    const store = tx.objectStore(STORE_NAME);
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.delete(Number(id));
 
-    const req = store.delete(Number(id));
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    request.onsuccess = () => {
+      console.log("✅ Place deleted");
+      resolve();
+    };
+
+    request.onerror = () => {
+      console.error("❌ Error:", request.error);
+      reject(request.error);
+    };
   });
 }
 
-function searchPlaces(query) {
-  const q = (query || "").trim().toLowerCase();
-  return getAllPlaces().then((all) => {
-    if (!q) return all;
-    return all.filter((p) => {
-      const name = (p.name || "").toLowerCase();
-      const addr = (p.address || "").toLowerCase();
-      const notes = (p.notes || "").toLowerCase();
-      return name.includes(q) || addr.includes(q) || notes.includes(q);
+async function searchPlaces(query) {
+  try {
+    const allPlaces = await getAllPlaces();
+    if (!query || query.trim() === "") {
+      return allPlaces;
+    }
+
+    const searchTerm = query.toLowerCase().trim();
+    const filtered = allPlaces.filter((place) => {
+      const nameMatch = place.name.toLowerCase().includes(searchTerm);
+      const addressMatch = place.address.toLowerCase().includes(searchTerm);
+      const notesMatch =
+        place.notes && place.notes.toLowerCase().includes(searchTerm);
+      return nameMatch || addressMatch || notesMatch;
     });
-  });
+
+    return filtered;
+  } catch (error) {
+    console.error("❌ Search error:", error);
+    throw error;
+  }
 }
 
-window.initDB = initDB;
-window.addPlace = addPlace;
-window.getAllPlaces = getAllPlaces;
-window.getPlaceById = getPlaceById;
-window.updatePlace = updatePlace;
-window.deletePlace = deletePlace;
-window.searchPlaces = searchPlaces;
+console.log("✅ db.js loaded");

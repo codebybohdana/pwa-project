@@ -7,128 +7,207 @@
 
     <title>Edit Place - City Assistant</title>
 
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
-    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="../images/icons/icon-192.png" />
+    <link rel="stylesheet" href="../css/styles.css" />
   </head>
-
-  <body data-page="edit-place">
+  <body>
+    <!-- Header -->
     <header class="header">
       <div class="container header-content">
-        <a href="/index.html" id="back-button" class="back-button">← Back</a>
+        <a href="#" id="back-button" class="back-button">← Back</a>
         <h1 class="header-title">Edit Place</h1>
       </div>
     </header>
 
+    <!-- Main Content -->
     <main class="main">
       <div class="container">
         <form id="edit-place-form" class="form">
+          <!-- Place Name -->
           <div class="form-group">
             <label for="place-name" class="form-label">
               Place Name <span class="required">*</span>
             </label>
-            <input type="text" id="place-name" class="form-input" required minlength="3" maxlength="100" />
+            <input
+              type="text"
+              id="place-name"
+              class="form-input"
+              placeholder="e.g., Opera House"
+              required
+              minlength="3"
+              maxlength="100"
+            />
           </div>
 
+          <!-- Address -->
           <div class="form-group">
             <label for="place-address" class="form-label">
               Address <span class="required">*</span>
             </label>
-            <input type="text" id="place-address" class="form-input" required minlength="5" maxlength="200" />
+            <input
+              type="text"
+              id="place-address"
+              class="form-input"
+              placeholder="e.g., 50 Main Street"
+              required
+              minlength="5"
+              maxlength="200"
+            />
           </div>
 
+          <!-- Notes -->
           <div class="form-group">
-            <label for="place-notes" class="form-label">Notes (optional)</label>
-            <textarea id="place-notes" class="form-textarea" rows="4" maxlength="500"></textarea>
+            <label for="place-notes" class="form-label">
+              Notes (optional)
+            </label>
+            <textarea
+              id="place-notes"
+              class="form-textarea"
+              placeholder="Add your notes..."
+              rows="4"
+              maxlength="500"
+            ></textarea>
             <span class="form-hint">Maximum 500 characters</span>
           </div>
 
+          <!-- Current Photo -->
           <div class="form-group">
             <label class="form-label">Current Photo</label>
-            <div class="photo-preview">
-              <img id="current-photo-img" src="/images/placeholder.png" alt="Current photo" />
+            <div id="current-photo-container" class="photo-preview">
+              <img
+                id="current-photo-img"
+                src="../images/placeholder.png"
+                alt="Current photo"
+              />
             </div>
           </div>
 
+          <!-- Change Photo -->
           <div class="form-group">
             <label class="form-label">Change Photo (optional)</label>
 
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-              <button type="button" id="change-photo-btn" class="button button-secondary" style="flex:1; min-width: 180px;">
+              <button
+                type="button"
+                id="change-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
                 📸 Take New Photo
               </button>
-              <button type="button" id="choose-new-photo-btn" class="button button-secondary" style="flex:1; min-width: 180px;">
+
+              <button
+                type="button"
+                id="choose-new-photo-btn"
+                class="button button-secondary"
+                style="flex: 1; min-width: 180px;"
+              >
                 🖼️ Choose from Gallery
               </button>
             </div>
 
-            <input type="file" id="new-photo-file-input" accept="image/*" style="display:none;" />
+            <input
+              type="file"
+              id="new-photo-file-input"
+              accept="image/*"
+              style="display: none;"
+            />
 
             <div id="new-photo-preview" class="photo-preview hidden">
               <img id="new-photo-img" src="" alt="New photo" />
-              <button type="button" id="remove-new-photo-btn" class="button-remove-photo">✕</button>
+              <button
+                type="button"
+                id="remove-new-photo-btn"
+                class="button-remove-photo"
+              >
+                ✕
+              </button>
             </div>
           </div>
 
+          <!-- Current Geolocation -->
           <div class="form-group" id="current-coords-group">
             <label class="form-label">Current Geolocation</label>
             <div class="coordinates-box">
-              <p class="coordinates-text">📍 <span id="current-coordinates-value">—</span></p>
+              <p class="coordinates-text">
+                📍 <span id="current-coordinates-value"></span>
+              </p>
 
-              <!-- ВАЖЛИВО: у тебе тут раніше був поламаний <a> -->
-              <a
+              
                 id="current-location-maps-btn"
                 href="#"
                 target="_blank"
-                rel="noopener"
                 class="button button-outline"
-                style="margin-top: 12px; font-size: 14px; padding: 10px 16px; display: none;"
+                style="
+                  margin-top: 12px;
+                  font-size: 14px;
+                  padding: 10px 16px;
+                  display: none;
+                "
               >
                 📍 Open on Google Maps
               </a>
             </div>
           </div>
 
+          <!-- Update Geolocation -->
           <div class="form-group">
             <label class="form-label">Update Geolocation (optional)</label>
-            <button type="button" id="update-location-btn" class="button button-secondary">
+            <button
+              type="button"
+              id="update-location-btn"
+              class="button button-secondary"
+            >
               📍 Get New Location
             </button>
 
             <div id="new-coordinates-display" class="coordinates-box hidden">
-              <p class="coordinates-text">📍 New: <span id="new-coordinates-value"></span></p>
-
-              <a
+              <p class="coordinates-text">
+                📍 New: <span id="new-coordinates-value"></span>
+              </p>
+              
                 id="preview-new-location"
                 href="#"
                 target="_blank"
-                rel="noopener"
                 class="button button-outline"
-                style="margin-top: 12px; font-size: 14px; padding: 10px 16px; display: none;"
+                style="
+                  margin-top: 12px;
+                  font-size: 14px;
+                  padding: 10px 16px;
+                  display: none;
+                "
               >
                 🗺️ View on Google Maps
               </a>
             </div>
           </div>
 
+          <!-- Buttons -->
           <div class="form-actions">
-            <button type="submit" class="button button-primary button-full">💾 Save Changes</button>
-            <a href="/index.html" id="cancel-btn" class="button button-outline button-full">Cancel</a>
+            <button type="submit" class="button button-primary button-full">
+              💾 Save Changes
+            </button>
+            <a href="#" id="cancel-btn" class="button button-outline button-full">
+              Cancel
+            </a>
           </div>
         </form>
       </div>
     </main>
 
-    <div id="loading-overlay" class="loading-overlay hidden" aria-hidden="true">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
       <div class="loading-spinner"></div>
       <p>Saving...</p>
     </div>
 
-    <script src="/js/utils.js" defer></script>
-    <script src="/js/db.js" defer></script>
-    <script src="/js/camera.js" defer></script>
-    <script src="/js/geolocation.js" defer></script>
-    <script src="/js/views/edit-place.js" defer></script>
-    <script src="/js/app.js" defer></script>
+    <!-- JavaScript -->
+    <script src="../js/db.js"></script>
+    <script src="../js/camera.js"></script>
+    <script src="../js/geolocation.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/views/edit-place.js"></script>
+    <script src="../js/app.js"></script>
   </body>
 </html>

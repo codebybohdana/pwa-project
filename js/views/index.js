@@ -1,80 +1,112 @@
 /**
- * views/index.js
- * Логіка головної сторінки.
+ * INDEX PAGE - Home page
  */
 
-window.CityViews = window.CityViews || {};
+async function initIndexPage() {
+  console.log("📱 Initializing index page...");
 
-window.CityViews.index = async function () {
-  const listEl = $("places-list");
-  const emptyEl = $("empty-state");
-  const searchEl = $("search-input");
+  try {
+    await loadAndDisplayPlaces();
+    setupSearch();
+  } catch (error) {
+    console.error("❌ Error:", error);
+    showError("Failed to load places");
+  }
+}
 
-  async function render(places) {
-    listEl.innerHTML = "";
+async function loadAndDisplayPlaces() {
+  try {
+    console.log("📍 Loading places...");
+    const places = await getAllPlaces();
+    displayPlaces(places);
+  } catch (error) {
+    console.error("❌ Loading error:", error);
+    throw error;
+  }
+}
 
-    if (!places.length) {
-      listEl.classList.add("hidden");
-      emptyEl.classList.remove("hidden");
-      return;
-    }
+function displayPlaces(places) {
+  const placesList = document.getElementById("places-list");
+  const emptyState = document.getElementById("empty-state");
 
-    emptyEl.classList.add("hidden");
-    listEl.classList.remove("hidden");
+  if (!placesList) return;
 
-    for (const place of places) {
-      const card = document.createElement("div");
-      card.className = "place-card";
-      card.addEventListener("click", () => {
-        window.location.href = `/pages/place-details.html?id=${place.id}`;
+  placesList.innerHTML = "";
+
+  if (places.length === 0) {
+    placesList.classList.add("hidden");
+    if (emptyState) emptyState.classList.remove("hidden");
+    return;
+  }
+
+  placesList.classList.remove("hidden");
+  if (emptyState) emptyState.classList.add("hidden");
+
+  places.forEach((place) => {
+    const card = createPlaceCard(place);
+    placesList.appendChild(card);
+  });
+
+  console.log(`✅ Displayed ${places.length} places`);
+}
+
+function createPlaceCard(place) {
+  const card = document.createElement("div");
+  card.className = "place-card";
+  card.onclick = () => goToPlaceDetails(place.id);
+
+  const photoSrc = place.photo || "images/placeholder.png";
+
+  let dateStr = "Date not specified";
+  if (place.timestamp) {
+    try {
+      dateStr = new Date(place.timestamp).toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       });
-
-      // ✅ Використовуємо thumbnail якщо є (для кращого performance)
-      const imgSrc =
-        place.photoThumb || place.photo || "/images/placeholder.png";
-
-      const dateText = place.timestamp
-        ? new Date(place.timestamp).toLocaleString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "—";
-
-      card.innerHTML = `
-        <img
-          class="place-card-image"
-          src="${imgSrc}"
-          alt="${escapeHtml(place.name)}"
-          loading="lazy"
-          decoding="async"
-          onerror="this.src='/images/placeholder.png'"
-        />
-        <div class="place-card-content">
-          <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
-          <p class="place-card-address">${escapeHtml(place.address)}</p>
-          <p class="place-card-meta">📅 ${dateText}</p>
-        </div>
-      `;
-
-      listEl.appendChild(card);
+    } catch (error) {
+      dateStr = new Date(place.timestamp).toLocaleDateString();
     }
   }
 
-  // initial
-  const places = await getAllPlaces();
-  await render(places);
+  card.innerHTML = `
+    <img src="${photoSrc}" alt="${escapeHtml(
+    place.name
+  )}" class="place-card-image" onerror="this.src='images/placeholder.png'">
+    <div class="place-card-content">
+      <h3 class="place-card-title">${escapeHtml(place.name)}</h3>
+      <p class="place-card-address">${escapeHtml(place.address)}</p>
+      <p class="place-card-meta">📅 ${dateStr}</p>
+    </div>
+  `;
 
-  // search (debounce)
-  let t = null;
-  searchEl?.addEventListener("input", (e) => {
-    clearTimeout(t);
-    t = setTimeout(async () => {
-      const q = e.target.value;
-      const results = await searchPlaces(q);
-      render(results);
-    }, 250);
+  return card;
+}
+
+function goToPlaceDetails(id) {
+  window.location.href = `pages/place-details.html?id=${id}`;
+}
+
+function setupSearch() {
+  const searchInput = document.getElementById("search-input");
+  if (!searchInput) return;
+
+  let searchTimeout;
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      const query = e.target.value;
+      console.log("🔍 Search:", query);
+
+      try {
+        const results = await searchPlaces(query);
+        displayPlaces(results);
+      } catch (error) {
+        console.error("❌ Search error:", error);
+      }
+    }, 300);
   });
-};
+}
+
+console.log("✅ index.js loaded");

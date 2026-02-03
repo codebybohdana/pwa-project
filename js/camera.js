@@ -1,56 +1,67 @@
 /**
- * camera.js
- * Камера через getUserMedia (працює тільки на HTTPS).
+ * CAMERA MODULE
  */
 
-function takePhoto() {
+function isCameraAvailable() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+
+async function takePhoto() {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-        reject(new Error("Camera is not supported on this device."));
-        return;
+      console.log("📸 Opening camera...");
+
+      if (!isCameraAvailable()) {
+        throw new Error("Camera not supported on this device");
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
       });
 
       const video = document.createElement("video");
       video.srcObject = stream;
       video.setAttribute("playsinline", "true");
-      video.style.position = "fixed";
-      video.style.left = "-9999px";
+      video.style.display = "none";
       document.body.appendChild(video);
 
       await video.play();
-
-      // Невелика пауза, щоб камера “прокинулась”
-      await new Promise((r) => setTimeout(r, 350));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth || 1280;
-      canvas.height = video.videoHeight || 720;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
 
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const context = canvas.getContext("2d");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const photoData = canvas.toDataURL("image/jpeg", 0.8);
 
-      // Закриваємо камеру
-      stream.getTracks().forEach((t) => t.stop());
+      stream.getTracks().forEach((track) => track.stop());
       video.remove();
 
-      resolve(dataUrl);
-    } catch (e) {
-      if (e.name === "NotAllowedError") {
-        reject(new Error("Camera permission denied."));
-      } else if (e.name === "NotFoundError") {
-        reject(new Error("Camera not found."));
+      console.log("✅ Photo taken");
+      resolve(photoData);
+    } catch (error) {
+      console.error("❌ Camera error:", error);
+
+      if (error.name === "NotAllowedError") {
+        reject(
+          new Error("Camera access denied. Please allow access in settings.")
+        );
+      } else if (error.name === "NotFoundError") {
+        reject(new Error("Camera not found on this device."));
+      } else if (error.name === "NotReadableError") {
+        reject(new Error("Camera is already in use by another app."));
       } else {
-        reject(new Error("Camera error: " + (e.message || e)));
+        reject(error);
       }
     }
   });
 }
 
-window.takePhoto = takePhoto;
+console.log("✅ camera.js loaded");

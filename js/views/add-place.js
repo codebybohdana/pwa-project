@@ -1,145 +1,209 @@
 /**
- * views/add-place.js
- * Додавання місця.
+ * ADD PLACE PAGE
  */
 
-window.CityViews = window.CityViews || {};
+let currentPhoto = null;
+let currentCoordinates = null;
 
-window.CityViews.addPlace = async function () {
-  let coords = null;
-  let photoFull = null;
-  let photoThumb = null;
+async function initAddPlacePage() {
+  console.log("📝 Initializing add place page...");
 
-  const form = $("add-place-form");
-  const locBtn = $("get-location-btn");
-  const takeBtn = $("take-photo-btn");
-  const chooseBtn = $("choose-photo-btn");
-  const fileInput = $("photo-file-input");
-
-  const coordsBox = $("coordinates-display");
-  const coordsValue = $("coordinates-value");
-  const previewOnMap = $("preview-on-map");
-
-  const preview = $("photo-preview");
-  const previewImg = $("photo-preview-img");
-  const removePhotoBtn = $("remove-photo-btn");
-
-  function setPhoto(previewDataUrl) {
-    previewImg.src = previewDataUrl;
-    preview.classList.remove("hidden");
+  try {
+    setupAddPlaceForm();
+    setupLocationButton();
+    setupCameraButton();
+    setupChoosePhotoButton();
+  } catch (error) {
+    console.error("❌ Error:", error);
+    showError("Failed to load form");
   }
+}
 
-  removePhotoBtn?.addEventListener("click", () => {
-    photoFull = null;
-    photoThumb = null;
-    preview.classList.add("hidden");
+function setupAddPlaceForm() {
+  const form = document.getElementById("add-place-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await handleFormSubmit();
   });
+}
 
-  locBtn?.addEventListener("click", async () => {
+async function handleFormSubmit() {
+  try {
+    console.log("💾 Saving...");
+    showLoading(true);
+
+    const name = document.getElementById("place-name").value.trim();
+    const address = document.getElementById("place-address").value.trim();
+    const notes = document.getElementById("place-notes").value.trim();
+
+    if (!name || !address) {
+      throw new Error("Please fill in required fields");
+    }
+
+    const placeData = {
+      name,
+      address,
+      notes: notes || "",
+      photo: currentPhoto || "",
+      coordinates: currentCoordinates || null,
+      timestamp: Date.now(),
+    };
+
+    const id = await addPlace(placeData);
+    console.log("✅ Saved with ID:", id);
+
+    showSuccess("Place saved successfully!");
+    setTimeout(() => {
+      window.location.href = "../index.html";
+    }, 1000);
+  } catch (error) {
+    console.error("❌ Error:", error);
+    showError(error.message || "Failed to save");
+  } finally {
+    showLoading(false);
+  }
+}
+
+function setupLocationButton() {
+  const btn = document.getElementById("get-location-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
     try {
-      locBtn.disabled = true;
-      locBtn.textContent = "⏳ Getting location...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Getting location...";
 
-      const pos = await getCurrentPosition();
-      coords = pos;
+      const coords = await getCurrentPosition();
+      currentCoordinates = coords;
 
-      coordsValue.textContent = formatCoordinates(pos.lat, pos.lng);
-      coordsBox.classList.remove("hidden");
+      const formatted = formatCoordinates(coords.lat, coords.lng);
+      const display = document.getElementById("coordinates-display");
+      const value = document.getElementById("coordinates-value");
 
-      previewOnMap.href = `https://www.google.com/maps?q=${pos.lat},${pos.lng}`;
-      previewOnMap.style.display = "inline-flex";
+      if (display && value) {
+        value.textContent = formatted;
+        display.classList.remove("hidden");
+      }
 
-      locBtn.textContent = "✅ Location obtained";
-    } catch (e) {
-      showError(e.message);
-      locBtn.textContent = "📍 Try again";
+      const previewBtn = document.getElementById("preview-on-map");
+      if (previewBtn) {
+        previewBtn.href = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+        previewBtn.style.display = "inline-flex";
+      }
+
+      btn.textContent = "✅ Location obtained";
+      btn.classList.add("button-success");
+    } catch (error) {
+      console.error("❌ Error:", error);
+      showError(error.message);
+      btn.textContent = "📍 Try again";
     } finally {
-      locBtn.disabled = false;
+      btn.disabled = false;
     }
   });
+}
 
-  takeBtn?.addEventListener("click", async () => {
+function setupCameraButton() {
+  const btn = document.getElementById("take-photo-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
     try {
-      takeBtn.disabled = true;
-      takeBtn.textContent = "⏳ Opening camera...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Opening camera...";
 
-      const raw = await takePhoto();
+      const photoData = await takePhoto();
+      currentPhoto = photoData;
 
-      // ✅ Робимо дві версії: full + thumb (це сильно допомагає Performance)
-      photoFull = await resizeImageDataUrl(raw, 1280, 1280, 0.82);
-      photoThumb = await resizeImageDataUrl(raw, 480, 480, 0.72);
+      showPhotoPreview(photoData);
 
-      setPhoto(photoFull);
-
-      takeBtn.textContent = "✅ Photo captured";
-    } catch (e) {
-      showError(e.message);
-      takeBtn.textContent = "📸 Try again";
+      btn.textContent = "✅ Photo taken";
+      btn.classList.add("button-success");
+    } catch (error) {
+      console.error("❌ Error:", error);
+      showError(error.message);
+      btn.textContent = "📸 Try again";
     } finally {
-      takeBtn.disabled = false;
+      btn.disabled = false;
     }
   });
+}
 
-  chooseBtn?.addEventListener("click", () => fileInput.click());
+function setupChoosePhotoButton() {
+  const btn = document.getElementById("choose-photo-btn");
+  const fileInput = document.getElementById("photo-file-input");
 
-  fileInput?.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
+  if (!btn || !fileInput) return;
+
+  btn.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
 
     try {
-      chooseBtn.disabled = true;
-      chooseBtn.textContent = "⏳ Loading...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Loading...";
 
-      if (!file.type.startsWith("image/"))
-        throw new Error("Please select an image file.");
-      if (file.size > 10 * 1024 * 1024)
-        throw new Error("File too large. Max 10MB.");
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Please select an image file");
+      }
 
-      const raw = await fileToDataUrl(file);
-      photoFull = await resizeImageDataUrl(raw, 1280, 1280, 0.82);
-      photoThumb = await resizeImageDataUrl(raw, 480, 480, 0.72);
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File too large. Maximum 10MB");
+      }
 
-      setPhoto(photoFull);
+      const photoData = await fileToBase64(file);
+      const compressed = await compressPhoto(photoData);
+      currentPhoto = compressed;
 
-      chooseBtn.textContent = "✅ Photo selected";
-    } catch (err) {
-      showError(err.message);
-      chooseBtn.textContent = "🖼️ Try again";
+      showPhotoPreview(compressed);
+
+      btn.textContent = "✅ Photo selected";
+      btn.classList.add("button-success");
+    } catch (error) {
+      console.error("❌ Error:", error);
+      showError(error.message);
+      btn.textContent = "🖼️ Try again";
     } finally {
-      chooseBtn.disabled = false;
+      btn.disabled = false;
       fileInput.value = "";
     }
   });
+}
 
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+function showPhotoPreview(photoData) {
+  const preview = document.getElementById("photo-preview");
+  const img = document.getElementById("photo-preview-img");
 
-    try {
-      showLoading(true);
+  if (preview && img) {
+    img.src = photoData;
+    preview.classList.remove("hidden");
+  }
 
-      const name = $("place-name").value.trim();
-      const address = $("place-address").value.trim();
-      const notes = $("place-notes").value.trim();
+  const removeBtn = document.getElementById("remove-photo-btn");
+  const cameraBtn = document.getElementById("take-photo-btn");
+  const chooseBtn = document.getElementById("choose-photo-btn");
 
-      if (!name || !address) throw new Error("Please fill required fields.");
+  if (removeBtn) {
+    removeBtn.onclick = () => {
+      currentPhoto = null;
+      preview.classList.add("hidden");
 
-      const data = {
-        name,
-        address,
-        notes: notes || "",
-        coordinates: coords,
-        photo: photoFull || "",
-        photoThumb: photoThumb || "",
-      };
+      if (cameraBtn) {
+        cameraBtn.textContent = "📸 Take Photo";
+        cameraBtn.classList.remove("button-success");
+      }
+      if (chooseBtn) {
+        chooseBtn.textContent = "🖼️ Choose from Gallery";
+        chooseBtn.classList.remove("button-success");
+      }
+    };
+  }
+}
 
-      await addPlace(data);
-
-      showSuccess("Place saved!");
-      window.location.href = "/index.html";
-    } catch (err) {
-      showError(err.message || "Failed to save.");
-    } finally {
-      showLoading(false);
-    }
-  });
-};
+console.log("✅ add-place.js loaded");

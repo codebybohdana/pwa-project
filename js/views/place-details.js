@@ -1,120 +1,162 @@
 /**
- * views/place-details.js
- * Деталі місця + мапа.
+ * PLACE DETAILS PAGE
  */
 
-window.CityViews = window.CityViews || {};
+async function initDetailsPage() {
+  console.log("📖 Initializing details page...");
 
-window.CityViews.placeDetails = async function () {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (!id) {
-    showError("ID not found.");
-    window.location.href = "/index.html";
-    return;
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const placeId = urlParams.get("id");
+
+    if (!placeId) {
+      throw new Error("ID not found");
+    }
+
+    await loadPlaceDetails(parseInt(placeId));
+    setupDetailsButtons(parseInt(placeId));
+  } catch (error) {
+    console.error("❌ Error:", error);
+    showError("Failed to load: " + error.message);
+    setTimeout(() => {
+      window.location.href = "../index.html";
+    }, 2000);
   }
+}
 
+async function loadPlaceDetails(id) {
   const place = await getPlaceById(id);
+
   if (!place) {
-    showError("Place not found.");
-    window.location.href = "/index.html";
-    return;
+    throw new Error("Place not found");
   }
 
-  // header + title
-  const headerTitle = $("place-name-header");
-  const nameEl = $("place-name");
-  if (headerTitle) headerTitle.textContent = place.name || "Place Details";
-  if (nameEl) nameEl.textContent = place.name || "Untitled";
+  displayPlaceDetails(place);
+}
 
-  // photo
-  const photoEl = $("place-photo");
-  if (photoEl) {
-    photoEl.src = place.photo || place.photoThumb || "/images/placeholder.png";
-    photoEl.onerror = () => (photoEl.src = "/images/placeholder.png");
+function displayPlaceDetails(place) {
+  const headerTitle = document.getElementById("place-name-header");
+  if (headerTitle) headerTitle.textContent = place.name || "Place";
+
+  const photo = document.getElementById("place-photo");
+  if (photo) {
+    photo.src = place.photo || "../images/placeholder.png";
+    photo.onerror = () => (photo.src = "../images/placeholder.png");
   }
 
-  // address + notes
-  $("place-address").textContent = place.address || "—";
+  const name = document.getElementById("place-name");
+  if (name) name.textContent = place.name || "Untitled";
 
-  const notesSection = $("notes-section");
+  const address = document.getElementById("place-address");
+  if (address) address.textContent = place.address || "—";
+
+  const notes = document.getElementById("place-notes");
+  const notesSection = document.getElementById("notes-section");
   if (place.notes && place.notes.trim()) {
-    $("place-notes").textContent = place.notes;
-    notesSection.classList.remove("hidden");
+    if (notes) notes.textContent = place.notes;
+    if (notesSection) notesSection.classList.remove("hidden");
   } else {
-    notesSection.classList.add("hidden");
+    if (notesSection) notesSection.classList.add("hidden");
   }
 
-  // date
-  const dateEl = $("place-date");
-  if (dateEl && place.timestamp) {
-    dateEl.textContent = new Date(place.timestamp).toLocaleString("en-US", {
-      year: "numeric",
+  displayCoordinates(place);
+
+  const date = document.getElementById("place-date");
+  if (date && place.timestamp) {
+    date.textContent = new Date(place.timestamp).toLocaleDateString("en-US", {
+      day: "numeric",
       month: "long",
-      day: "2-digit",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
   }
+}
 
-  // coordinates + map
-  const coordsSection = $("coordinates-section");
-  const coordsText = $("place-coordinates");
-  const openMapsBtn = $("open-maps-btn");
-  const mapPreview = $("map-preview");
-  const mapHint = $("map-offline-hint");
+function displayCoordinates(place) {
+  const coordinates = document.getElementById("place-coordinates");
+  const coordsSection = document.getElementById("coordinates-section");
+  const openMapsBtn = document.getElementById("open-maps-btn");
+  const mapPreview = document.getElementById("map-preview");
 
-  if (place.coordinates?.lat && place.coordinates?.lng) {
+  if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
     const { lat, lng } = place.coordinates;
 
-    coordsText.textContent = formatCoordinates(lat, lng);
+    if (coordinates) {
+      coordinates.textContent = formatCoordinates(lat, lng);
+    }
 
-    openMapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
-    openMapsBtn.style.display = "inline-flex";
+    if (coordsSection) coordsSection.classList.remove("hidden");
 
-    // ✅ Мапу показуємо тільки коли online (щоб не ламати offline)
-    if (navigator.onLine) {
+    if (openMapsBtn) {
+      openMapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      openMapsBtn.style.display = "inline-flex";
+    }
+
+    if (mapPreview) {
       const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
         lng - 0.01
       },${lat - 0.01},${lng + 0.01},${
         lat + 0.01
       }&layer=mapnik&marker=${lat},${lng}`;
 
-      mapPreview.innerHTML = `<iframe src="${osmUrl}" style="border:none;"></iframe>`;
+      mapPreview.innerHTML = `<iframe src="${osmUrl}" style="border: none;"></iframe>`;
       mapPreview.style.display = "block";
-      mapHint.classList.add("hidden");
-    } else {
-      mapPreview.style.display = "none";
-      mapHint.classList.remove("hidden");
     }
   } else {
-    coordsSection.classList.add("hidden");
+    if (coordsSection) coordsSection.classList.add("hidden");
+  }
+}
+
+function setupDetailsButtons(placeId) {
+  const editBtn = document.getElementById("edit-btn");
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      window.location.href = `edit-place.html?id=${placeId}`;
+    });
   }
 
-  // buttons
-  $("edit-btn").addEventListener("click", () => {
-    window.location.href = `/pages/edit-place.html?id=${place.id}`;
-  });
+  const deleteBtn = document.getElementById("delete-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => showDeleteModal(placeId));
+  }
+}
 
-  $("delete-btn").addEventListener("click", () => openDeleteModal(place.id));
-};
+function showDeleteModal(placeId) {
+  const modal = document.getElementById("delete-modal");
+  if (!modal) return;
 
-function openDeleteModal(placeId) {
-  const modal = $("delete-modal");
   modal.classList.remove("hidden");
 
-  const close = () => modal.classList.add("hidden");
+  const confirmBtn = document.getElementById("confirm-delete-btn");
+  if (confirmBtn) {
+    confirmBtn.onclick = async () => {
+      await handleDeletePlace(placeId);
+    };
+  }
 
-  $("cancel-delete-btn").onclick = close;
-  modal.querySelector(".modal-overlay").onclick = close;
+  const cancelBtn = document.getElementById("cancel-delete-btn");
+  if (cancelBtn) {
+    cancelBtn.onclick = () => modal.classList.add("hidden");
+  }
 
-  $("confirm-delete-btn").onclick = async () => {
-    try {
-      await deletePlace(placeId);
-      showSuccess("Place deleted.");
-      window.location.href = "/index.html";
-    } catch (e) {
-      showError("Failed to delete.");
-    }
-  };
+  const overlay = modal.querySelector(".modal-overlay");
+  if (overlay) {
+    overlay.onclick = () => modal.classList.add("hidden");
+  }
 }
+
+async function handleDeletePlace(placeId) {
+  try {
+    await deletePlace(placeId);
+    showSuccess("Place deleted!");
+    setTimeout(() => {
+      window.location.href = "../index.html";
+    }, 1000);
+  } catch (error) {
+    console.error("❌ Error:", error);
+    showError("Failed to delete");
+  }
+}
+
+console.log("✅ place-details.js loaded");

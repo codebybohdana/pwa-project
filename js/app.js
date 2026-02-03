@@ -1,59 +1,54 @@
 /**
- * app.js
- * Головний запуск застосунку:
- * - ініціалізує IndexedDB один раз
- * - реєструє Service Worker
- * - оновлює Online/Offline статус
- * - запускає JS конкретного view (index/add/edit/details)
+ * MAIN APPLICATION
  */
 
-(async function bootstrap() {
+const currentPath = window.location.pathname;
+
+function isIndexPage() {
+  return (
+    currentPath.endsWith("index.html") ||
+    currentPath === "/" ||
+    currentPath === ""
+  );
+}
+
+function isAddPlacePage() {
+  return currentPath.includes("add-place.html");
+}
+
+function isDetailsPage() {
+  return currentPath.includes("place-details.html");
+}
+
+function isEditPage() {
+  return currentPath.includes("edit-place.html");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("🚀 Starting app...");
+
   try {
-    // ✅ 1) База: тільки один раз
     await initDB();
 
-    // ✅ 2) Статус онлайн/офлайн
-    updateOnlineStatus();
+    if (isIndexPage() && typeof initIndexPage === "function") {
+      await initIndexPage();
+    } else if (isAddPlacePage() && typeof initAddPlacePage === "function") {
+      await initAddPlacePage();
+    } else if (isDetailsPage() && typeof initDetailsPage === "function") {
+      await initDetailsPage();
+    } else if (isEditPage() && typeof initEditPage === "function") {
+      await initEditPage();
+    }
 
-    // ✅ 3) Service Worker
-    registerServiceWorker();
+    if (typeof updateOnlineStatus === "function") {
+      updateOnlineStatus();
+    }
 
-    // ✅ 4) Запуск view за data-page
-    const page = document.body.dataset.page;
-
-    if (page === "index" && window.CityViews?.index) {
-      await window.CityViews.index();
-    }
-    if (page === "add-place" && window.CityViews?.addPlace) {
-      await window.CityViews.addPlace();
-    }
-    if (page === "edit-place" && window.CityViews?.editPlace) {
-      await window.CityViews.editPlace();
-    }
-    if (page === "place-details" && window.CityViews?.placeDetails) {
-      await window.CityViews.placeDetails();
-    }
-  } catch (err) {
-    console.error("Critical init error:", err);
-    alert("App failed to start: " + (err?.message || err));
+    console.log("✅ App initialized");
+  } catch (error) {
+    console.error("❌ Critical error:", error);
+    alert("Error loading app: " + error.message);
   }
-})();
+});
 
-/** Реєстрація Service Worker */
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-
-  window.addEventListener("load", async () => {
-    try {
-      const reg = await navigator.serviceWorker.register("/service-worker.js");
-      // console.log("SW registered:", reg.scope);
-
-      // Якщо є оновлення — активуємо швидко
-      if (reg.waiting) {
-        reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      }
-    } catch (e) {
-      console.warn("SW registration failed:", e);
-    }
-  });
-}
+console.log("✅ app.js loaded");

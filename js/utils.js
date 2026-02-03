@@ -1,109 +1,107 @@
 /**
- * utils.js
- * Допоміжні функції. Коментарі українською, UI лишається англійською.
+ * UTILITY FUNCTIONS
  */
 
-function $(id) {
-  return document.getElementById(id);
-}
-
-/** Показати повідомлення про помилку */
 function showError(message) {
   alert("❌ " + message);
+  console.error("Error:", message);
 }
 
-/** Показати повідомлення про успіх */
 function showSuccess(message) {
   alert("✅ " + message);
+  console.log("Success:", message);
 }
 
-/** Показати/сховати overlay */
 function showLoading(show) {
-  const overlay = $("loading-overlay");
-  if (!overlay) return;
-  overlay.classList.toggle("hidden", !show);
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) {
+    if (show) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
 }
 
-/** Онлайн/офлайн статус у header + банер */
 function updateOnlineStatus() {
-  const statusEl = $("online-status");
-  const banner = $("offline-banner");
+  const statusElement = document.getElementById("online-status");
+  const offlineBanner = document.getElementById("offline-banner");
 
-  const render = () => {
-    const online = navigator.onLine;
+  const updateStatus = () => {
+    const isOnline = navigator.onLine;
 
-    if (statusEl) {
-      statusEl.innerHTML = online
+    if (statusElement) {
+      statusElement.innerHTML = isOnline
         ? '<span class="status-dot status-online"></span><span class="status-text">Online</span>'
         : '<span class="status-dot status-offline"></span><span class="status-text">Offline</span>';
     }
 
-    if (banner) {
-      banner.classList.toggle("hidden", online);
+    if (offlineBanner) {
+      if (isOnline) {
+        offlineBanner.classList.add("hidden");
+      } else {
+        offlineBanner.classList.remove("hidden");
+      }
     }
   };
 
-  render();
-  window.addEventListener("online", render);
-  window.addEventListener("offline", render);
+  updateStatus();
+  window.addEventListener("online", updateStatus);
+  window.addEventListener("offline", updateStatus);
 }
 
-/** Екранування HTML */
 function escapeHtml(text) {
+  if (!text) return "";
   const div = document.createElement("div");
-  div.textContent = text ?? "";
+  div.textContent = text;
   return div.innerHTML;
 }
 
-/**
- * Стиснення картинки до потрібного розміру
- * @param {string} dataUrl base64 dataUrl
- * @param {number} maxW
- * @param {number} maxH
- * @param {number} quality 0..1
- */
-function resizeImageDataUrl(dataUrl, maxW, maxH, quality = 0.8) {
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("File read error"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressPhoto(base64Data) {
   return new Promise((resolve, reject) => {
     const img = new Image();
 
     img.onload = () => {
-      let { width, height } = img;
+      const maxWidth = 1920;
+      const maxHeight = 1080;
+      let width = img.width;
+      let height = img.height;
 
-      const ratio = Math.min(maxW / width, maxH / height, 1);
-      const newW = Math.round(width * ratio);
-      const newH = Math.round(height * ratio);
+      if (width <= maxWidth && height <= maxHeight) {
+        resolve(base64Data);
+        return;
+      }
+
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = Math.floor(width * ratio);
+      height = Math.floor(height * ratio);
 
       const canvas = document.createElement("canvas");
-      canvas.width = newW;
-      canvas.height = newH;
+      canvas.width = width;
+      canvas.height = height;
 
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, newW, newH);
+      ctx.drawImage(img, 0, 0, width, height);
 
-      resolve(canvas.toDataURL("image/jpeg", quality));
+      const compressed = canvas.toDataURL("image/jpeg", 0.8);
+      console.log(
+        `✅ Compressed: ${img.width}x${img.height} → ${width}x${height}`
+      );
+      resolve(compressed);
     };
 
     img.onerror = () => reject(new Error("Image load error"));
-    img.src = dataUrl;
+    img.src = base64Data;
   });
 }
 
-/** File -> base64 dataUrl */
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = () => reject(new Error("File read error"));
-    r.readAsDataURL(file);
-  });
-}
-
-// Експортуємо в window (бо без bundler)
-window.$ = $;
-window.showError = showError;
-window.showSuccess = showSuccess;
-window.showLoading = showLoading;
-window.updateOnlineStatus = updateOnlineStatus;
-window.escapeHtml = escapeHtml;
-window.resizeImageDataUrl = resizeImageDataUrl;
-window.fileToDataUrl = fileToDataUrl;
+console.log("✅ utils.js loaded");

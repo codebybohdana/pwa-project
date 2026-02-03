@@ -4,41 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2563eb" />
-    <meta
-      name="description"
-      content="Save useful city places (address, notes, photo, location) and use them offline."
-    />
+    <meta name="description" content="Save your favorite city places offline" />
 
     <title>City Assistant - PWA</title>
 
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
-
-    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="images/icons/icon-192.png" />
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
-
-  <!-- data-page використовується для запуску JS саме для цієї сторінки -->
-  <body data-page="index">
+  <body>
+    <!-- Header -->
     <header class="header">
       <div class="container header-content">
         <h1 class="header-title">📍 City Assistant</h1>
-
-        <div id="online-status" class="online-status" aria-live="polite">
+        <div id="online-status" class="online-status">
           <span class="status-dot status-online"></span>
           <span class="status-text">Online</span>
         </div>
       </div>
     </header>
 
+    <!-- Offline Banner -->
     <div id="offline-banner" class="offline-banner hidden">
       <div class="container">
-        <p>⚠️ You're offline. Some features may be limited.</p>
+        <p>⚠️ You're offline. App is running in limited mode.</p>
       </div>
     </div>
 
+    <!-- Main Content -->
     <main class="main">
       <div class="container">
+        <!-- Search Bar -->
         <div class="search-section">
           <div class="search-bar">
             <input
@@ -51,20 +47,23 @@
           </div>
         </div>
 
+        <!-- Add Place Button -->
         <div class="actions">
-          <a href="/pages/add-place.html" class="button button-primary">
+          <a href="pages/add-place.html" class="button button-primary">
             ➕ Add Place
           </a>
         </div>
 
+        <!-- Places List -->
         <div id="places-list" class="places-grid"></div>
 
+        <!-- Empty State -->
         <div id="empty-state" class="empty-state hidden">
           <div class="empty-state-content">
             <div class="empty-state-icon">📍</div>
             <h2>No saved places</h2>
             <p>Add your first favorite place to get started!</p>
-            <a href="/pages/add-place.html" class="button button-primary">
+            <a href="pages/add-place.html" class="button button-primary">
               Add First Place
             </a>
           </div>
@@ -72,16 +71,29 @@
       </div>
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>© 2026 City Assistant | PWA Project</p>
       </div>
     </footer>
 
-    <!-- JS: defer щоб не блокувати рендер -->
-    <script src="/js/utils.js" defer></script>
-    <script src="/js/db.js" defer></script>
-    <script src="/js/views/index.js" defer></script>
-    <script src="/js/app.js" defer></script>
+    <!-- JavaScript -->
+    <script src="js/db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/views/index.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Service Worker -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./service-worker.js")
+            .then((reg) => console.log("✅ SW registered", reg.scope))
+            .catch((err) => console.error("❌ SW failed", err));
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,176 +1,306 @@
 /**
- * views/edit-place.js
- * Редагування місця.
+ * EDIT PLACE PAGE
  */
 
-window.CityViews = window.CityViews || {};
+let currentPlaceId = null;
+let currentPlace = null;
+let newPhoto = null;
+let newCoordinates = null;
 
-window.CityViews.editPlace = async function () {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (!id) {
-    showError("ID not found.");
-    window.location.href = "/index.html";
-    return;
+async function initEditPage() {
+  console.log("✏️ Initializing edit page...");
+
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentPlaceId = urlParams.get("id");
+
+    if (!currentPlaceId) {
+      throw new Error("Place ID not found");
+    }
+
+    await loadPlaceForEditing(parseInt(currentPlaceId));
+
+    setupEditForm();
+    setupChangePhotoButton();
+    setupChooseNewPhotoButton();
+    setupUpdateLocationButton();
+    setupNavigationButtons();
+  } catch (error) {
+    console.error("❌ Error:", error);
+    alert("Error: " + error.message);
+    window.location.href = "../index.html";
+  }
+}
+
+async function loadPlaceForEditing(id) {
+  try {
+    const place = await getPlaceById(id);
+
+    if (!place) {
+      throw new Error("Place not found");
+    }
+
+    currentPlace = place;
+    fillFormWithPlaceData(place);
+  } catch (error) {
+    console.error("❌ Loading error:", error);
+    throw error;
+  }
+}
+
+function fillFormWithPlaceData(place) {
+  const nameInput = document.getElementById("place-name");
+  if (nameInput) nameInput.value = place.name || "";
+
+  const addressInput = document.getElementById("place-address");
+  if (addressInput) addressInput.value = place.address || "";
+
+  const notesInput = document.getElementById("place-notes");
+  if (notesInput) notesInput.value = place.notes || "";
+
+  const currentPhotoImg = document.getElementById("current-photo-img");
+  if (currentPhotoImg) {
+    currentPhotoImg.src = place.photo || "../images/placeholder.png";
+    currentPhotoImg.onerror = function () {
+      this.src = "../images/placeholder.png";
+    };
   }
 
-  const place = await getPlaceById(id);
-  if (!place) {
-    showError("Place not found.");
-    window.location.href = "/index.html";
-    return;
-  }
+  const currentCoordsGroup = document.getElementById("current-coords-group");
+  const currentCoordsValue = document.getElementById(
+    "current-coordinates-value"
+  );
+  const currentMapsBtn = document.getElementById("current-location-maps-btn");
 
-  // Заповнюємо форму
-  $("place-name").value = place.name || "";
-  $("place-address").value = place.address || "";
-  $("place-notes").value = place.notes || "";
+  if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
+    const formatted = formatCoordinates(
+      place.coordinates.lat,
+      place.coordinates.lng
+    );
 
-  const currentPhotoImg = $("current-photo-img");
-  currentPhotoImg.src =
-    place.photo || place.photoThumb || "/images/placeholder.png";
-  currentPhotoImg.onerror = () =>
-    (currentPhotoImg.src = "/images/placeholder.png");
+    if (currentCoordsValue) {
+      currentCoordsValue.textContent = formatted;
+    }
 
-  // Координати
-  const currentCoordsValue = $("current-coordinates-value");
-  const currentMapsBtn = $("current-location-maps-btn");
+    if (currentCoordsGroup) {
+      currentCoordsGroup.classList.remove("hidden");
+    }
 
-  if (place.coordinates?.lat && place.coordinates?.lng) {
-    const { lat, lng } = place.coordinates;
-    currentCoordsValue.textContent = formatCoordinates(lat, lng);
-
-    currentMapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
-    currentMapsBtn.style.display = "inline-flex";
+    if (currentMapsBtn) {
+      const mapsUrl = `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`;
+      currentMapsBtn.href = mapsUrl;
+      currentMapsBtn.style.display = "inline-flex";
+    }
   } else {
-    $("current-coords-group").classList.add("hidden");
+    if (currentCoordsValue) {
+      currentCoordsValue.textContent = "Coordinates not specified";
+    }
+    if (currentMapsBtn) {
+      currentMapsBtn.style.display = "none";
+    }
   }
+}
 
-  // Back/Cancel links
-  $("back-button").href = `/pages/place-details.html?id=${id}`;
-  $("cancel-btn").href = `/pages/place-details.html?id=${id}`;
+function setupEditForm() {
+  const form = document.getElementById("edit-place-form");
+  if (!form) return;
 
-  // Нові дані
-  let newCoords = null;
-  let newPhotoFull = null;
-  let newPhotoThumb = null;
-
-  const newPreview = $("new-photo-preview");
-  const newImg = $("new-photo-img");
-
-  $("remove-new-photo-btn").addEventListener("click", () => {
-    newPhotoFull = null;
-    newPhotoThumb = null;
-    newPreview.classList.add("hidden");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await handleEditFormSubmit();
   });
+}
 
-  $("change-photo-btn").addEventListener("click", async () => {
+async function handleEditFormSubmit() {
+  try {
+    console.log("💾 Saving changes...");
+    showLoading(true);
+
+    const name = document.getElementById("place-name").value.trim();
+    const address = document.getElementById("place-address").value.trim();
+    const notes = document.getElementById("place-notes").value.trim();
+
+    if (!name || !address) {
+      throw new Error("Please fill in required fields");
+    }
+
+    const updatedPlace = {
+      ...currentPlace,
+      name,
+      address,
+      notes: notes || "",
+    };
+
+    if (newPhoto) {
+      updatedPlace.photo = newPhoto;
+    }
+
+    if (newCoordinates) {
+      updatedPlace.coordinates = newCoordinates;
+    }
+
+    updatedPlace.timestamp = Date.now();
+
+    await updatePlace(currentPlaceId, updatedPlace);
+
+    alert("✅ Changes saved successfully!");
+    window.location.href = `place-details.html?id=${currentPlaceId}`;
+  } catch (error) {
+    console.error("❌ Error:", error);
+    alert("❌ " + error.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function setupChangePhotoButton() {
+  const btn = document.getElementById("change-photo-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
     try {
-      $("change-photo-btn").disabled = true;
-      $("change-photo-btn").textContent = "⏳ Opening camera...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Opening camera...";
 
-      const raw = await takePhoto();
-      newPhotoFull = await resizeImageDataUrl(raw, 1280, 1280, 0.82);
-      newPhotoThumb = await resizeImageDataUrl(raw, 480, 480, 0.72);
+      const photoData = await takePhoto();
+      newPhoto = photoData;
 
-      newImg.src = newPhotoFull;
-      newPreview.classList.remove("hidden");
+      const preview = document.getElementById("new-photo-preview");
+      const img = document.getElementById("new-photo-img");
 
-      $("change-photo-btn").textContent = "✅ New photo ready";
-    } catch (e) {
-      showError(e.message);
-      $("change-photo-btn").textContent = "📸 Try again";
+      if (preview && img) {
+        img.src = photoData;
+        preview.classList.remove("hidden");
+      }
+
+      const removeBtn = document.getElementById("remove-new-photo-btn");
+      if (removeBtn) {
+        removeBtn.onclick = () => {
+          newPhoto = null;
+          preview.classList.add("hidden");
+          btn.textContent = "📸 Take New Photo";
+        };
+      }
+
+      btn.textContent = "✅ New photo ready";
+    } catch (error) {
+      console.error("❌ Error:", error);
+      alert("❌ " + error.message);
+      btn.textContent = "📸 Try again";
     } finally {
-      $("change-photo-btn").disabled = false;
+      btn.disabled = false;
     }
   });
+}
 
-  $("choose-new-photo-btn").addEventListener("click", () =>
-    $("new-photo-file-input").click()
-  );
+function setupChooseNewPhotoButton() {
+  const btn = document.getElementById("choose-new-photo-btn");
+  const fileInput = document.getElementById("new-photo-file-input");
 
-  $("new-photo-file-input").addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
+  if (!btn || !fileInput) return;
+
+  btn.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
 
     try {
-      $("choose-new-photo-btn").disabled = true;
-      $("choose-new-photo-btn").textContent = "⏳ Loading...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Loading...";
 
-      const raw = await fileToDataUrl(file);
-      newPhotoFull = await resizeImageDataUrl(raw, 1280, 1280, 0.82);
-      newPhotoThumb = await resizeImageDataUrl(raw, 480, 480, 0.72);
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Please select an image file");
+      }
 
-      newImg.src = newPhotoFull;
-      newPreview.classList.remove("hidden");
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File too large. Maximum 10MB");
+      }
 
-      $("choose-new-photo-btn").textContent = "✅ Photo selected";
-    } catch (err) {
-      showError(err.message);
-      $("choose-new-photo-btn").textContent = "🖼️ Try again";
+      const photoData = await fileToBase64(file);
+      const compressed = await compressPhoto(photoData);
+      newPhoto = compressed;
+
+      const preview = document.getElementById("new-photo-preview");
+      const img = document.getElementById("new-photo-img");
+
+      if (preview && img) {
+        img.src = compressed;
+        preview.classList.remove("hidden");
+      }
+
+      const removeBtn = document.getElementById("remove-new-photo-btn");
+      if (removeBtn) {
+        removeBtn.onclick = () => {
+          newPhoto = null;
+          preview.classList.add("hidden");
+          btn.textContent = "🖼️ Choose from Gallery";
+        };
+      }
+
+      btn.textContent = "✅ Photo selected";
+    } catch (error) {
+      console.error("❌ Error:", error);
+      alert("❌ " + error.message);
+      btn.textContent = "🖼️ Try again";
     } finally {
-      $("choose-new-photo-btn").disabled = false;
-      $("new-photo-file-input").value = "";
+      btn.disabled = false;
+      fileInput.value = "";
     }
   });
+}
 
-  $("update-location-btn").addEventListener("click", async () => {
+function setupUpdateLocationButton() {
+  const btn = document.getElementById("update-location-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
     try {
-      $("update-location-btn").disabled = true;
-      $("update-location-btn").textContent = "⏳ Getting location...";
+      btn.disabled = true;
+      btn.textContent = "⏳ Getting location...";
 
-      newCoords = await getCurrentPosition();
+      const coords = await getCurrentPosition();
+      newCoordinates = coords;
 
-      $("new-coordinates-value").textContent = formatCoordinates(
-        newCoords.lat,
-        newCoords.lng
-      );
-      $("new-coordinates-display").classList.remove("hidden");
+      const formatted = formatCoordinates(coords.lat, coords.lng);
+      const display = document.getElementById("new-coordinates-display");
+      const value = document.getElementById("new-coordinates-value");
 
-      const link = $("preview-new-location");
-      link.href = `https://www.google.com/maps?q=${newCoords.lat},${newCoords.lng}`;
-      link.style.display = "inline-flex";
+      if (display && value) {
+        value.textContent = formatted;
+        display.classList.remove("hidden");
+      }
 
-      $("update-location-btn").textContent = "✅ New location obtained";
-    } catch (e) {
-      showError(e.message);
-      $("update-location-btn").textContent = "📍 Try again";
+      const previewBtn = document.getElementById("preview-new-location");
+      if (previewBtn) {
+        const mapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+        previewBtn.href = mapsUrl;
+        previewBtn.style.display = "inline-flex";
+      }
+
+      btn.textContent = "✅ New location obtained";
+    } catch (error) {
+      console.error("❌ Error:", error);
+      alert("❌ " + error.message);
+      btn.textContent = "📍 Try again";
     } finally {
-      $("update-location-btn").disabled = false;
+      btn.disabled = false;
     }
   });
+}
 
-  // submit
-  $("edit-place-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
+function setupNavigationButtons() {
+  const backBtn = document.getElementById("back-button");
+  if (backBtn) {
+    backBtn.href = `place-details.html?id=${currentPlaceId}`;
+  }
 
-    try {
-      showLoading(true);
+  const cancelBtn = document.getElementById("cancel-btn");
+  if (cancelBtn) {
+    cancelBtn.href = `place-details.html?id=${currentPlaceId}`;
+  }
+}
 
-      const name = $("place-name").value.trim();
-      const address = $("place-address").value.trim();
-      const notes = $("place-notes").value.trim();
-
-      if (!name || !address) throw new Error("Please fill required fields.");
-
-      const updated = {
-        ...place,
-        name,
-        address,
-        notes: notes || "",
-        coordinates: newCoords || place.coordinates || null,
-        photo: newPhotoFull || place.photo || "",
-        photoThumb: newPhotoThumb || place.photoThumb || "",
-      };
-
-      await updatePlace(id, updated);
-
-      showSuccess("Changes saved!");
-      window.location.href = `/pages/place-details.html?id=${id}`;
-    } catch (err) {
-      showError(err.message || "Failed to save.");
-    } finally {
-      showLoading(false);
-    }
-  });
-};
+console.log("✅ edit-place.js loaded");
