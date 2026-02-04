@@ -3,11 +3,10 @@
  * Goals:
  * - Precache app shell (fast start, good Lighthouse)
  * - Offline fallback for documents (offline.html)
- * - Separate cache for place images (/cached-images/*)
  * - Sensible runtime caching strategies
  */
 
-const CACHE_VERSION = "v2"; // <-- bump when you change assets list
+const CACHE_VERSION = "v1";
 const APP_CACHE = `city-assistant-app-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `city-assistant-runtime-${CACHE_VERSION}`;
 const IMAGES_CACHE = `city-assistant-images-${CACHE_VERSION}`;
@@ -112,13 +111,6 @@ function isStaticAsset(url) {
   );
 }
 
-function isCachedImagesPath(url) {
-  // Always store cached images under this app base path
-  const path =
-    basePath === "/" ? "/cached-images/" : `${basePath}cached-images/`;
-  return url.pathname.startsWith(path);
-}
-
 // -------- install / activate --------
 
 self.addEventListener("install", (event) => {
@@ -160,19 +152,7 @@ self.addEventListener("fetch", (event) => {
   // Only handle same-origin for caching (avoid caching 3rd party)
   const sameOrigin = url.origin === self.location.origin;
 
-  // 1) Cached place images (/cached-images/*): Cache Only (from IMAGES cache)
-  if (sameOrigin && isCachedImagesPath(url)) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(IMAGES_CACHE);
-        const cached = await cache.match(request);
-        return cached || new Response("Image not found", { status: 404 });
-      })()
-    );
-    return;
-  }
-
-  // 2) HTML navigation: Network First, fallback to cache, then offline page
+  // 1) HTML navigation: Network First, fallback to cache, then offline page
   if (sameOrigin && isHtmlRequest(request)) {
     event.respondWith(
       (async () => {
@@ -188,13 +168,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 3) Static assets (css/js/icons/etc): Stale-While-Revalidate (fast + updates)
+  // 2) Static assets (css/js/icons/etc): Stale-While-Revalidate (fast + updates)
   if (sameOrigin && isStaticAsset(url)) {
     event.respondWith(staleWhileRevalidate(request, RUNTIME_CACHE));
     return;
   }
 
-  // 4) Other same-origin requests:
+  // 3) Other same-origin requests:
   // - images: cache-first (speed)
   // - anything else: network-first
   if (sameOrigin && request.destination === "image") {
