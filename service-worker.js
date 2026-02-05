@@ -11,7 +11,6 @@ const APP_CACHE = `city-assistant-app-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `city-assistant-runtime-${CACHE_VERSION}`;
 const IMAGES_CACHE = `city-assistant-images-${CACHE_VERSION}`;
 
-// Base path (works for root and subfolders; Netlify will be "/")
 const getBasePath = () => {
   const basePath = self.location.pathname.replace("/service-worker.js", "");
   return basePath || "/";
@@ -20,7 +19,7 @@ const basePath = getBasePath();
 
 const OFFLINE_URL = `${basePath}pages/offline.html`;
 
-// Precache (app shell)
+// Precache
 const PRECACHE_ASSETS = [
   `${basePath}`,
   `${basePath}index.html`,
@@ -55,8 +54,6 @@ const PRECACHE_ASSETS = [
   `${basePath}images/icons/icon-192-maskable.png`,
   `${basePath}images/icons/icon-512-maskable.png`,
 ];
-
-// -------- helpers --------
 
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
@@ -168,17 +165,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2) Static assets (css/js/icons/etc): Stale-While-Revalidate (fast + updates)
-  if (sameOrigin && isStaticAsset(url)) {
-    event.respondWith(staleWhileRevalidate(request, RUNTIME_CACHE));
+  // 2) Images: Cache First (separate cache)
+  if (sameOrigin && request.destination === "image") {
+    event.respondWith(cacheFirst(request, IMAGES_CACHE));
     return;
   }
 
-  // 3) Other same-origin requests:
-  // - images: cache-first (speed)
-  // - anything else: network-first
-  if (sameOrigin && request.destination === "image") {
-    event.respondWith(cacheFirst(request, RUNTIME_CACHE));
+  // 3) Static assets (css/js/manifest/icons): Stale-While-Revalidate
+  if (sameOrigin && isStaticAsset(url)) {
+    event.respondWith(staleWhileRevalidate(request, RUNTIME_CACHE));
     return;
   }
 
